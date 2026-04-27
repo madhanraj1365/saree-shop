@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { getFirebaseClientAuth } from "@/lib/firebase-client";
 import { formatPrice } from "@/lib/catalog";
@@ -66,14 +67,15 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <Link href={`/products/${product.slug}`} className="group block h-full">
+    <Link prefetch={true} href={`/products/${product.slug}`} className="group block h-full">
       <article className="flex h-full flex-col overflow-hidden rounded-[8px] bg-white shadow-[0_8px_24px_rgba(36,31,32,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_34px_rgba(95,0,21,0.14)]">
         <div className="relative aspect-[3/4] overflow-hidden bg-[#eee8dd]">
-          <img
-            src={product.images[0]}
+          <Image
+            src={product.images[0] || "/placeholder.jpg"}
             alt={product.name}
-            loading="lazy"
-            className="h-full w-full object-cover"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
           />
 
           <div className="absolute -bottom-5 right-4 flex items-end gap-3">

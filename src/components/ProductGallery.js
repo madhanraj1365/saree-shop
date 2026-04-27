@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 
 export default function ProductGallery({ images, name }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,10 +43,11 @@ export default function ProductGallery({ images, name }) {
             onClick={() => selectImage(idx)}
             className={`aspect-[4/5] w-full overflow-hidden rounded-lg border bg-[#fbf9f6] transition-opacity cursor-pointer ${currentIndex === idx ? 'border-[#d4af37] opacity-100' : 'border-[#eaddcf] opacity-50 hover:opacity-100'}`}
           >
-            <img
-              src={image}
+            <Image
+              src={image || "/placeholder.jpg"}
               alt=""
-              loading="lazy"
+              width={100}
+              height={125}
               className="h-full w-full object-cover"
             />
           </div>
@@ -53,10 +55,12 @@ export default function ProductGallery({ images, name }) {
       </div>
       
       <div className="group relative overflow-hidden rounded-xl border border-[#eaddcf] bg-[#fbf9f6] shadow-[0_4px_20px_rgba(44,36,32,0.02)]">
-        <img
-          src={images[currentIndex]}
+        <Image
+          src={images[currentIndex] || "/placeholder.jpg"}
           alt={name}
-          loading="lazy"
+          priority
+          width={800}
+          height={1000}
           className="h-auto w-full object-contain transition-opacity duration-300"
         />
         
