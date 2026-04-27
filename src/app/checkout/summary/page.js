@@ -24,6 +24,7 @@ export default function OrderSummaryPage() {
       router.push("/checkout/address");
       return;
     }
+    // eslint-disable-next-line
     setAddress(JSON.parse(savedAddress));
 
     // Load Cart
@@ -278,7 +279,7 @@ export default function OrderSummaryPage() {
             </button>
 
             <p className="px-8 text-center text-[10px] leading-relaxed text-[#888]">
-              By placing your order, you agree to Saree Shop's{" "}
+              By placing your order, you agree to Saree Shop&apos;s{" "}
               <Link href="#" className="underline hover:text-[#555]">Terms of Service</Link> and{" "}
               <Link href="#" className="underline hover:text-[#555]">Privacy Policy</Link>
             </p>
