@@ -89,12 +89,7 @@ export default function ProductActions({ product }) {
     setTimeout(() => setMessage(""), 3000);
   }
 
-  const handleBuyNow = () => {
-    // Current site uses WhatsApp
-    const url = `${window.location.origin}/products/${product.slug}`;
-    const text = `Hi, I would like to order ${quantity}x "${product.name}"\nPrice: Rs.${product.price} each\n\nLink: ${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
-  };
+
 
   const shareOnWhatsApp = () => {
     const url = `${window.location.origin}/products/${product.slug}`;
@@ -132,12 +127,6 @@ export default function ProductActions({ product }) {
           className="w-full sm:w-auto min-w-[160px] rounded-[4px] bg-[#333333] px-6 py-3 text-sm font-bold uppercase tracking-widest text-white transition hover:bg-[#222222]"
         >
           Add to Cart
-        </button>
-        <button
-          onClick={handleBuyNow}
-          className="w-full sm:w-auto min-w-[160px] rounded-[4px] bg-[#d8a734] px-6 py-3 text-sm font-bold uppercase tracking-widest text-white transition hover:bg-[#c4962d]"
-        >
-          Buy Now
         </button>
       </div>
 

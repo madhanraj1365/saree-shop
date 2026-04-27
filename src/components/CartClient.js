@@ -108,7 +108,7 @@ export default function CartClient() {
     window.dispatchEvent(new Event("saree-cart-change"));
   }
 
-  async function orderOnWhatsApp() {
+  async function proceedToCheckout() {
     setIsProcessingOrder(true);
 
     try {
@@ -116,42 +116,15 @@ export default function CartClient() {
       const user = auth.currentUser;
 
       if (!user) {
-        sessionStorage.setItem("postLoginRedirect", "/cart");
+        sessionStorage.setItem("postLoginRedirect", "/checkout/address");
         router.push("/login");
         return;
       }
 
-      const token = await user.getIdToken();
-      const res = await fetch("/api/users/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      let profile = {};
-      if (res.ok) {
-        const data = await res.json();
-        profile = data.profile || {};
-      }
-
-      if (!profile.name || !profile.phone || !profile.address) {
-        sessionStorage.setItem("postProfileRedirect", "/cart");
-        router.push("/profile");
-        return;
-      }
-
-      const lines = cartProducts.map((product, index) => {
-        return `${index + 1}. ${product.name} x ${product.quantity} - ${formatPrice(
-          product.price * product.quantity
-        )}`;
-      });
-
-      const message = `Hello, I want to order:\n\n${lines.join(
-        "\n"
-      )}\n\nTotal: ${formatPrice(total)}\n\nCustomer Details:\nName: ${profile.name}\nPhone: ${profile.phone}\nAddress: ${profile.address}`;
-
-      window.location.assign(`https://wa.me/${shopWhatsAppNumber}?text=${encodeURIComponent(message)}`);
+      router.push("/checkout/address");
     } catch (error) {
-      console.error("Error processing order:", error);
-      alert("Failed to process order. Please try again.");
+      console.error("Error proceeding to checkout:", error);
+      alert("Failed to proceed. Please try again.");
     } finally {
       setIsProcessingOrder(false);
     }
@@ -311,7 +284,7 @@ export default function CartClient() {
               </Link>
               <button
                 type="button"
-                onClick={orderOnWhatsApp}
+                onClick={proceedToCheckout}
                 disabled={isProcessingOrder}
                 className="flex w-full items-center justify-center rounded-[5px] bg-[#ef3f2f] py-3 text-xs font-black uppercase tracking-[0.08em] text-white transition hover:bg-[#8b001c] disabled:opacity-70"
               >
