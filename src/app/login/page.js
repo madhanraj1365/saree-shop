@@ -6,6 +6,7 @@ import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "firebas
 import { getFirebaseClientAuth } from "@/lib/firebase-client";
 
 export default function LoginPage() {
+  console.log("Redeploy");
   const router = useRouter();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -68,10 +69,10 @@ export default function LoginPage() {
 
   async function handleGoogleSignIn() {
     if (isLoggingIn) return;
-    
+
     setIsLoggingIn(true);
     setError("");
-    
+
     try {
       const auth = getFirebaseClientAuth();
       const provider = new GoogleAuthProvider();
@@ -94,7 +95,7 @@ export default function LoginPage() {
           Customer account
         </p>
         <h1 className="mt-3 font-serif text-4xl text-[#43242d] sm:text-5xl">Sign in</h1>
-        
+
         <div className="mt-10 rounded-[8px] border border-[#efe7dc] bg-[#fbfaf7] p-8 max-w-md">
           {isLoading ? (
             <p className="text-[#6d6064] text-center">Checking authentication...</p>
@@ -103,13 +104,13 @@ export default function LoginPage() {
               <p className="text-[#6d6064] text-sm text-center">
                 Sign in to manage your profile and speed up checkout.
               </p>
-              
+
               {error && (
                 <div className="rounded-[8px] bg-red-50 p-4">
                   <p className="text-sm font-medium text-red-800">{error}</p>
                 </div>
               )}
-              
+
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
