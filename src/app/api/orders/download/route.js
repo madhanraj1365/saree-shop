@@ -57,7 +57,7 @@ export async function GET(request) {
       shipping: orderData.shipping || 0,
       giftWrapFee: orderData.giftWrapFee || 0,
       totalAmount: orderData.totalAmount,
-    });
+    }, new URL(request.url).origin);
 
     return new NextResponse(pdfBuffer, {
       status: 200,

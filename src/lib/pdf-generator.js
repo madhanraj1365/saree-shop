@@ -14,20 +14,32 @@ function toJpegUrl(url) {
 }
 
 // Fetch an image and return a Buffer, or null if it fails
-async function fetchImageBuffer(url) {
+async function fetchImageBuffer(url, baseUrl = "") {
   if (!url) return null;
 
   try {
     // Handle local relative paths (e.g., /couples/sky-blue.jpg)
     if (url.startsWith("/")) {
+      // Try local filesystem first (works in many environments)
       const localPath = path.join(process.cwd(), "public", url);
       if (fs.existsSync(localPath)) {
-        console.log("Loading local product image:", localPath);
+        console.log("Loading local product image via FS:", localPath);
         return fs.readFileSync(localPath);
-      } else {
-        console.error("Local image not found:", localPath);
-        return null;
+      } 
+      
+      // If FS fails (common on Vercel for some setups), try fetching via URL
+      if (baseUrl) {
+        const fullUrl = `${baseUrl}${url}`;
+        console.log("Loading local product image via Fetch:", fullUrl);
+        const res = await fetch(fullUrl, { signal: AbortSignal.timeout(5000) });
+        if (res.ok) {
+          const arrayBuffer = await res.arrayBuffer();
+          return Buffer.from(arrayBuffer);
+        }
       }
+      
+      console.error("Local image not found via FS or Fetch:", url);
+      return null;
     }
 
     // Handle absolute URLs (External or Cloudinary)
@@ -60,12 +72,12 @@ function loadLogo() {
   return null;
 }
 
-export async function generateInvoiceBuffer(orderData) {
+export async function generateInvoiceBuffer(orderData, baseUrl = "") {
   // 1. Pre-fetch all product images BEFORE starting PDF generation
   const imageBuffers = [];
   for (const item of orderData.items) {
     if (item.images && item.images.length > 0) {
-      const buf = await fetchImageBuffer(item.images[0]);
+      const buf = await fetchImageBuffer(item.images[0], baseUrl);
       imageBuffers.push(buf);
     } else {
       imageBuffers.push(null);

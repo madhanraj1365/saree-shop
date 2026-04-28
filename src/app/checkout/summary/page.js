@@ -182,7 +182,7 @@ export default function OrderSummaryPage() {
             <span>&rsaquo;</span>
             <span className="font-bold text-[#241f20]">ORDER DETAILS</span>
           </div>
-          <h1 className="mt-6 font-serif text-2xl text-[#241f20]">Order Details</h1>
+          <h1 className="mt-6 font-serif text-2xl text-[#241f20]">Order Summary & Payment</h1>
         </div>
 
         <div className="grid gap-10 lg:grid-cols-[1fr_380px]">

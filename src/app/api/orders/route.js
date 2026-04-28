@@ -36,7 +36,7 @@ export async function POST(request) {
       giftWrapFee: giftWrapFee || 0,
       totalAmount,
     };
-    const pdfBuffer = await generateInvoiceBuffer(orderDataForPdf);
+    const pdfBuffer = await generateInvoiceBuffer(orderDataForPdf, new URL(request.url).origin);
 
     // 2. Upload to Cloudinary (include .pdf extension so it's served as a PDF)
     const publicId = `invoice_${billId}.pdf`;
