@@ -27,3 +27,26 @@ export function getCloudinary() {
 
   return cloudinary;
 }
+
+export function uploadRawBuffer(buffer, folder, publicId) {
+  const cloudinaryInstance = getCloudinary();
+
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinaryInstance.uploader.upload_stream(
+      {
+        folder,
+        public_id: publicId,
+        resource_type: "raw", // 'raw' is for non-image files like PDFs
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(result);
+      }
+    );
+
+    uploadStream.end(buffer);
+  });
+}

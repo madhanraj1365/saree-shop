@@ -16,12 +16,13 @@ export default function OrderSummaryPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [orderNotes, setOrderNotes] = useState("");
   const [giftWrap, setGiftWrap] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     // Load address from session
     const savedAddress = sessionStorage.getItem("checkoutAddress");
     if (!savedAddress) {
-      router.push("/checkout/address");
+      router.push("/profile");
       return;
     }
     // eslint-disable-next-line
@@ -81,8 +82,80 @@ export default function OrderSummaryPage() {
   const giftWrapFee = giftWrap ? 30 : 0;
   const amountPayable = subtotal + shipping + giftWrapFee;
 
-  const handleRazorpay = () => {
-    alert("Razorpay payment gateway integration is currently in development!\\n\\nAmount to pay: " + formatPrice(amountPayable));
+  const handleRazorpay = async () => {
+    setIsProcessing(true);
+    try {
+      const auth = getFirebaseClientAuth();
+      const user = auth.currentUser;
+      const token = user ? await user.getIdToken() : null;
+
+      if (!token) {
+        alert("Please sign in to place an order.");
+        router.push("/login");
+        return;
+      }
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          items: cartProducts,
+          address,
+          subtotal,
+          shipping,
+          giftWrapFee,
+          totalAmount: amountPayable
+        })
+      });
+
+      if (!res.ok) {
+        let errMsg = "Failed to place order.";
+        try {
+          const errData = await res.json();
+          if (errData.error) errMsg = errData.error;
+        } catch(e) {}
+        throw new Error(errMsg);
+      }
+
+      const data = await res.json();
+      
+      // Clear local cart
+      localStorage.removeItem("sareeCart");
+      window.dispatchEvent(new Event("saree-cart-change"));
+
+      // Build WhatsApp message with order details
+      const productLines = cartProducts.map(
+        (p, i) => `${i + 1}. ${p.name} × ${p.quantity} = Rs. ${(p.price * p.quantity).toLocaleString()}`
+      ).join("\n");
+
+      const billDownloadLink = `${window.location.origin}/api/orders/download?billId=${data.billId}`;
+
+      const whatsappMessage = `🛍️ *NEW ORDER PLACED*\n\n` +
+        `*Bill ID:* ${data.billId}\n` +
+        `*Date:* ${new Date().toLocaleString("en-IN")}\n\n` +
+        `👤 *Customer Details:*\n` +
+        `Name: ${address.fullName}\n` +
+        `Phone: +91 ${address.mobileNo}\n` +
+        `Address: ${address.completeAddress}, ${address.city}, ${address.state} - ${address.pincode}\n\n` +
+        `📦 *Ordered Products:*\n${productLines}\n\n` +
+        `💰 *Subtotal:* Rs. ${subtotal.toLocaleString()}\n` +
+        `🚚 *Shipping:* ${shipping > 0 ? "Rs. " + shipping.toLocaleString() : "Free"}\n` +
+        (giftWrap ? `🎁 *Gift Wrap:* Rs. ${giftWrapFee.toLocaleString()}\n` : "") +
+        `✅ *Total Amount:* Rs. ${amountPayable.toLocaleString()}\n\n` +
+        `📄 *Download Invoice:*\n${billDownloadLink}`;
+
+      const whatsappUrl = `https://wa.me/916382842775?text=${encodeURIComponent(whatsappMessage)}`;
+      window.open(whatsappUrl, "_blank");
+
+      router.push(`/checkout/confirmation?billId=${data.billId}&amount=${amountPayable}`);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Something went wrong while placing the order.");
+      setIsProcessing(false);
+    }
   };
 
   if (!isLoaded || !address) {
@@ -99,13 +172,13 @@ export default function OrderSummaryPage() {
         
         {/* Top Navigation */}
         <div className="mb-8">
-          <Link href="/checkout/address" className="flex items-center gap-2 text-xs font-bold tracking-widest text-[#555] hover:text-[#8b001c]">
+          <Link href="/profile" className="flex items-center gap-2 text-xs font-bold tracking-widest text-[#555] hover:text-[#8b001c]">
             <span>&larr;</span> GO BACK
           </Link>
           <div className="mt-4 flex gap-2 text-[10px] uppercase tracking-widest text-[#888]">
             <Link href="/" className="hover:text-[#241f20]">HOME</Link>
             <span>&rsaquo;</span>
-            <Link href="/checkout/address" className="hover:text-[#241f20]">ADDRESS</Link>
+            <Link href="/profile" className="hover:text-[#241f20]">ADDRESS</Link>
             <span>&rsaquo;</span>
             <span className="font-bold text-[#241f20]">ORDER DETAILS</span>
           </div>
@@ -155,7 +228,7 @@ export default function OrderSummaryPage() {
               <section className="bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-[#555]">SHIPPING ADDRESS</h3>
-                  <Link href="/checkout/address" className="text-[10px] font-bold text-[#d8a734] underline hover:text-[#c4962d]">CHANGE</Link>
+                  <Link href="/profile" className="text-[10px] font-bold text-[#d8a734] underline hover:text-[#c4962d]">CHANGE</Link>
                 </div>
                 <div className="space-y-1 text-sm text-[#333]">
                   <p className="font-bold">{address.fullName}</p>
@@ -171,7 +244,7 @@ export default function OrderSummaryPage() {
               <section className="bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-[#555]">BILLING ADDRESS</h3>
-                  <Link href="/checkout/address" className="text-[10px] font-bold text-[#d8a734] underline hover:text-[#c4962d]">CHANGE</Link>
+                  <Link href="/profile" className="text-[10px] font-bold text-[#d8a734] underline hover:text-[#c4962d]">CHANGE</Link>
                 </div>
                 <div className="space-y-1 text-sm text-[#333]">
                   <p className="font-bold">{address.fullName}</p>
@@ -273,9 +346,10 @@ export default function OrderSummaryPage() {
             
             <button
               onClick={handleRazorpay}
-              className="w-full bg-[#3b1111] py-4 text-xs font-bold tracking-widest text-white transition hover:bg-[#250a0a]"
+              disabled={isProcessing}
+              className="w-full bg-[#3b1111] py-4 text-xs font-bold tracking-widest text-white transition hover:bg-[#250a0a] disabled:opacity-70"
             >
-              PAY WITH RAZORPAY ⚡
+              {isProcessing ? "PROCESSING ORDER..." : "PAY WITH RAZORPAY ⚡"}
             </button>
 
             <p className="px-8 text-center text-[10px] leading-relaxed text-[#888]">

@@ -56,8 +56,41 @@ export default function LoginPage() {
         }
 
         // User is logged in, redirect
-        const redirectUrl = sessionStorage.getItem("postLoginRedirect") || "/profile";
+        let redirectUrl = sessionStorage.getItem("postLoginRedirect") || "/profile";
         sessionStorage.removeItem("postLoginRedirect");
+
+        try {
+          const token = await user.getIdToken();
+          const profileRes = await fetch("/api/users/profile", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            if (profileData.profile && profileData.profile.name && profileData.profile.address && profileData.profile.phone && profileData.profile.city && profileData.profile.pincode) {
+              sessionStorage.setItem("checkoutAddress", JSON.stringify({
+                fullName: profileData.profile.name,
+                mobileNo: profileData.profile.phone ? profileData.profile.phone.replace("+91", "") : "",
+                city: profileData.profile.city,
+                pincode: profileData.profile.pincode,
+                state: profileData.profile.state,
+                completeAddress: profileData.profile.address,
+                landmark: profileData.profile.landmark || "",
+                country: "India",
+                type: profileData.profile.addressType || "HOME",
+                isDefaultBilling: profileData.profile.isBillingDefault || false,
+                isDefaultShipping: profileData.profile.isShippingDefault || false,
+              }));
+            } else {
+              if (redirectUrl === "/checkout/summary") {
+                sessionStorage.setItem("postProfileRedirect", "/checkout/summary");
+                redirectUrl = "/profile";
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch profile during login", err);
+        }
+
         router.push(redirectUrl);
       } else {
         setIsLoading(false);

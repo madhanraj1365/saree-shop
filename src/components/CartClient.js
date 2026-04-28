@@ -116,12 +116,42 @@ export default function CartClient() {
       const user = auth.currentUser;
 
       if (!user) {
-        sessionStorage.setItem("postLoginRedirect", "/checkout/address");
+        sessionStorage.setItem("postLoginRedirect", "/checkout/summary");
         router.push("/login");
         return;
       }
 
-      router.push("/checkout/address");
+      // User is logged in, check if they have a complete profile
+      const token = await user.getIdToken();
+      const res = await fetch("/api/users/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.profile && data.profile.name && data.profile.address && data.profile.phone && data.profile.city && data.profile.pincode) {
+          // Details exist. Save to session storage and skip to order summary.
+          sessionStorage.setItem("checkoutAddress", JSON.stringify({
+            fullName: data.profile.name,
+            mobileNo: data.profile.phone ? data.profile.phone.replace("+91", "") : "",
+            city: data.profile.city,
+            pincode: data.profile.pincode,
+            state: data.profile.state,
+            completeAddress: data.profile.address,
+            landmark: data.profile.landmark || "",
+            country: "India",
+            type: data.profile.addressType || "HOME",
+            isDefaultBilling: data.profile.isBillingDefault || false,
+            isDefaultShipping: data.profile.isShippingDefault || false,
+          }));
+          router.push("/checkout/summary");
+          return;
+        }
+      }
+
+      // No complete profile, redirect to profile page to fill details
+      sessionStorage.setItem("postProfileRedirect", "/checkout/summary");
+      router.push("/profile");
     } catch (error) {
       console.error("Error proceeding to checkout:", error);
       alert("Failed to proceed. Please try again.");

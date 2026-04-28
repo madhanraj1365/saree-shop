@@ -36,6 +36,13 @@ export async function POST(request) {
       address: data.address,
       phone: data.phone,
       email: decodedToken.email || data.email || "",
+      city: data.city || "",
+      pincode: data.pincode || "",
+      state: data.state || "",
+      landmark: data.landmark || "",
+      addressType: data.addressType || "HOME",
+      isBillingDefault: data.isBillingDefault || false,
+      isShippingDefault: data.isShippingDefault || false,
     };
 
     await updateUserProfile(decodedToken.uid, updateData);

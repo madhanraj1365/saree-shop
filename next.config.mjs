@@ -5,6 +5,7 @@ const projectRoot = dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages: ["pdfkit"],
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   reactCompiler: true,
   turbopack: {

@@ -22,6 +22,7 @@ export default function Header() {
   const [cartCount, setCartCount] = useState(0);
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     const auth = getFirebaseClientAuth();
@@ -35,8 +36,16 @@ export default function Header() {
           });
           const data = await res.json();
           setIsAdmin(data.role === "admin");
+          
+          const profileRes = await fetch("/api/users/profile", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            setProfile(profileData.profile);
+          }
         } catch (err) {
-          console.error("Failed to fetch role", err);
+          console.error("Failed to fetch user data", err);
           setIsAdmin(false);
         }
       } else {
@@ -164,12 +173,49 @@ export default function Header() {
               </span>
             ) : null}
           </Link>
-          <Link
-            href={user ? "/profile" : "/login"}
-            className="hidden items-center gap-2 rounded-full border border-[#ead8b7] bg-white px-4 py-2 text-sm font-bold tracking-wide text-[#8b001c] transition-all hover:border-[#d8a734] hover:bg-[#fff4b8] hover:shadow-sm sm:flex"
-          >
-            {user ? "Profile" : "Sign In"}
-          </Link>
+          {user ? (
+            <div className="group relative hidden sm:block">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 rounded-full border border-[#ead8b7] bg-white px-4 py-2 text-sm font-bold tracking-wide text-[#8b001c] transition-all hover:border-[#d8a734] hover:bg-[#fff4b8] hover:shadow-sm"
+              >
+                Profile
+              </Link>
+              <div className="absolute right-0 top-full pt-2 hidden group-hover:block z-50">
+                <div className="w-64 rounded-xl border border-[#ead8b7] bg-white p-4 shadow-xl">
+                <div className="border-b border-[#f4f4f4] pb-3">
+                  <p className="font-serif text-lg font-bold text-[#241f20]">
+                    {profile?.name || user.displayName || "Customer"}
+                  </p>
+                  <p className="text-sm text-[#5c4d43]">
+                    {profile?.phone || user.phoneNumber || "No phone added"}
+                  </p>
+                </div>
+                <div className="mt-3 flex flex-col gap-2">
+                  <Link
+                    href="/profile"
+                    className="rounded-[4px] px-3 py-2 text-sm font-bold text-[#241f20] transition hover:bg-[#fff9c4] hover:text-[#8b001c]"
+                  >
+                    My Account
+                  </Link>
+                  <Link
+                    href="/orders"
+                    className="rounded-[4px] px-3 py-2 text-sm font-bold text-[#241f20] transition hover:bg-[#fff9c4] hover:text-[#8b001c]"
+                  >
+                    My Orders
+                  </Link>
+                </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="hidden items-center gap-2 rounded-full border border-[#ead8b7] bg-white px-4 py-2 text-sm font-bold tracking-wide text-[#8b001c] transition-all hover:border-[#d8a734] hover:bg-[#fff4b8] hover:shadow-sm sm:flex"
+            >
+              Sign In
+            </Link>
+          )}
           {isAdmin && (
             <Link
               href="/admin"
