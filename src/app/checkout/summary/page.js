@@ -126,30 +126,6 @@ export default function OrderSummaryPage() {
       localStorage.removeItem("sareeCart");
       window.dispatchEvent(new Event("saree-cart-change"));
 
-      // Build WhatsApp message with order details
-      const productLines = cartProducts.map(
-        (p, i) => `${i + 1}. ${p.name} × ${p.quantity} = Rs. ${(p.price * p.quantity).toLocaleString()}`
-      ).join("\n");
-
-      const billDownloadLink = `${window.location.origin}/api/orders/download?billId=${data.billId}`;
-
-      const whatsappMessage = `🛍️ *NEW ORDER PLACED*\n\n` +
-        `*Bill ID:* ${data.billId}\n` +
-        `*Date:* ${new Date().toLocaleString("en-IN")}\n\n` +
-        `👤 *Customer Details:*\n` +
-        `Name: ${address.fullName}\n` +
-        `Phone: +91 ${address.mobileNo}\n` +
-        `Address: ${address.completeAddress}, ${address.city}, ${address.state} - ${address.pincode}\n\n` +
-        `📦 *Ordered Products:*\n${productLines}\n\n` +
-        `💰 *Subtotal:* Rs. ${subtotal.toLocaleString()}\n` +
-        `🚚 *Shipping:* ${shipping > 0 ? "Rs. " + shipping.toLocaleString() : "Free"}\n` +
-        (giftWrap ? `🎁 *Gift Wrap:* Rs. ${giftWrapFee.toLocaleString()}\n` : "") +
-        `✅ *Total Amount:* Rs. ${amountPayable.toLocaleString()}\n\n` +
-        `📄 *Download Invoice:*\n${billDownloadLink}`;
-
-      const whatsappUrl = `https://wa.me/916382842775?text=${encodeURIComponent(whatsappMessage)}`;
-      window.open(whatsappUrl, "_blank");
-
       router.push(`/checkout/confirmation?billId=${data.billId}&amount=${amountPayable}`);
     } catch (err) {
       console.error(err);

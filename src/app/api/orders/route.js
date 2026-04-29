@@ -3,6 +3,8 @@ import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase-admin";
 import { generateInvoiceBuffer } from "@/lib/pdf-generator";
 import { uploadRawBuffer } from "@/lib/cloudinary";
 
+import { sendAdminOrderNotification } from "@/lib/email-service";
+
 export async function POST(request) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -57,11 +59,16 @@ export async function POST(request) {
       giftWrapFee: giftWrapFee || 0,
       items,
       address,
+      status: "PENDING", // Initial admin status
     };
 
     await db.collection("orders").doc(billId).set(orderDoc);
 
-    // 4. Clear user cart
+    // 4. Send Email Notification to Admins
+    // We do this in the background (no await) to keep the response fast for the user
+    sendAdminOrderNotification(orderDoc).catch(err => console.error("Email notify error:", err));
+
+    // 5. Clear user cart
     await db.collection("carts").doc(userId).delete();
 
     return NextResponse.json({ success: true, billId, pdfUrl });

@@ -14,7 +14,7 @@ function toJpegUrl(url) {
 }
 
 // Fetch an image and return a Buffer, or null if it fails
-async function fetchImageBuffer(url, baseUrl = "") {
+export async function fetchImageBuffer(url, baseUrl = "") {
   if (!url) return null;
 
   try {
