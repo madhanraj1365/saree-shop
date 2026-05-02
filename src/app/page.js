@@ -25,13 +25,15 @@ export default async function Home() {
   return (
     <>
       <main className="bg-[#f4f4f4] text-[#241f20]">
-        <HeroCarousel />
+        <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <HeroCarousel />
+        </div>
 
-        <div className="border-b border-[#ead8b7]">
+        <div className="border-b border-[#ead8b7] animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           <Marquee items={trustItems} />
         </div>
 
-        <section className="bg-white py-16 sm:py-20">
+        <section className="bg-white py-16 sm:py-20 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
           <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
             <div className="mb-10 flex flex-col items-center text-center">
               <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-[#d8a734]">
@@ -74,7 +76,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section id="new-sales" className="border-t border-[#ead8b7] mx-auto max-w-[1600px] px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="new-sales" className="border-t border-[#ead8b7] mx-auto max-w-[1600px] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
           <div className="mb-10 flex flex-col items-center text-center">
             <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-[#d8a734]">
               Fresh from the showroom
@@ -101,7 +103,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="bg-[#eeeeee] py-12 sm:py-16">
+        <section className="bg-[#eeeeee] py-12 sm:py-16 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
           <div className="mx-auto max-w-[1600px] px-4 text-center sm:px-6 lg:px-8">
             <h2 className="text-3xl font-black tracking-wide text-[#241f20] sm:text-4xl">Testimonial</h2>
             <div className="mx-auto mt-3 h-[2px] w-12 bg-[#d8a734]" />
@@ -111,7 +113,9 @@ export default async function Home() {
           </div>
         </section>
 
-        <StatsCounter />
+        <div className="animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+          <StatsCounter />
+        </div>
       </main>
     </>
   );

@@ -59,6 +59,7 @@ export default function ProductActions({ product }) {
   const [message, setMessage] = useState("");
   const [user, setUser] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [justAddedToCart, setJustAddedToCart] = useState(false);
 
   useEffect(() => {
     const auth = getFirebaseClientAuth();
@@ -72,6 +73,9 @@ export default function ProductActions({ product }) {
   const handleIncrease = () => setQuantity((q) => Math.min(product.stock || 10, q + 1));
 
   async function addToCart() {
+    setJustAddedToCart(true);
+    setTimeout(() => setJustAddedToCart(false), 800);
+    
     if (user) {
       setMessage("Syncing with your account...");
       const success = await writeToCloud("/api/cart", product._id, quantity);
@@ -124,9 +128,15 @@ export default function ProductActions({ product }) {
       <div className="flex flex-col gap-4 sm:flex-row">
         <button
           onClick={addToCart}
-          className="w-full sm:w-auto min-w-[160px] rounded-[4px] bg-[#333333] px-6 py-3 text-sm font-bold uppercase tracking-widest text-white transition hover:bg-[#222222]"
+          className={`flex items-center justify-center gap-2 w-full sm:w-auto min-w-[160px] rounded-[4px] px-6 py-3 text-sm font-bold uppercase tracking-widest text-white transition-all duration-500 ${justAddedToCart ? 'bg-[#8b001c] scale-105 shadow-lg shadow-[#8b001c]/40' : 'bg-[#333333] hover:bg-[#222222] active:scale-95'}`}
         >
-          Add to Cart
+          <svg className={`h-5 w-5 transition-all duration-500 ${justAddedToCart ? 'scale-125 translate-x-1 rotate-12' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h15l-1.5 9h-12L6 6Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 6 5.4 3H3" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M18 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
+          </svg>
+          {justAddedToCart ? "Added!" : "Add to Cart"}
         </button>
       </div>
 

@@ -47,25 +47,7 @@ export default function ProductGallery({ images, name }) {
   };
 
   return (
-    <div className="grid gap-6 sm:grid-cols-[80px_1fr] lg:grid-cols-[100px_1fr]">
-      <div className="hidden flex-col gap-4 sm:flex">
-        {images.map((image, idx) => (
-          <div 
-            key={image} 
-            onClick={() => selectImage(idx)}
-            className={`aspect-[4/5] w-full overflow-hidden rounded-lg border bg-[#fbf9f6] transition-opacity cursor-pointer ${currentIndex === idx ? 'border-[#d4af37] opacity-100' : 'border-[#eaddcf] opacity-50 hover:opacity-100'}`}
-          >
-            <Image
-              src={image || "/placeholder.jpg"}
-              alt=""
-              width={100}
-              height={125}
-              className="h-full w-full object-cover"
-            />
-          </div>
-        ))}
-      </div>
-      
+    <div className="flex flex-col gap-4">
       <div 
         className="group relative overflow-hidden rounded-xl border border-[#eaddcf] bg-[#fbf9f6] shadow-[0_4px_20px_rgba(44,36,32,0.02)] cursor-crosshair"
         onMouseEnter={() => setIsHovering(true)}
@@ -116,13 +98,34 @@ export default function ProductGallery({ images, name }) {
               {images.map((_, idx) => (
                 <div 
                   key={idx} 
-                  className={`h-1.5 rounded-full transition-all ${currentIndex === idx ? 'w-4 bg-[#d4af37]' : 'w-1.5 bg-white/60'}`} 
+                  className={`h-1.5 rounded-full transition-all ${currentIndex === idx ? 'w-4 bg-[#d8a734]' : 'w-1.5 bg-white/60'}`} 
                 />
               ))}
             </div>
           </>
         )}
       </div>
+
+      {/* Thumbnails below the image */}
+      {images.length > 1 && (
+        <div className="flex flex-row gap-4 overflow-x-auto pb-2 scrollbar-hide">
+          {images.map((image, idx) => (
+            <div 
+              key={idx} 
+              onClick={() => selectImage(idx)}
+              className={`relative aspect-[4/5] w-20 sm:w-24 shrink-0 overflow-hidden rounded-lg border bg-[#fbf9f6] transition-all cursor-pointer ${currentIndex === idx ? 'border-[#8b001c] opacity-100 ring-2 ring-[#8b001c]/20' : 'border-[#eaddcf] opacity-60 hover:opacity-100'}`}
+            >
+              <Image
+                src={image || "/placeholder.jpg"}
+                alt=""
+                fill
+                sizes="(max-width: 768px) 80px, 96px"
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

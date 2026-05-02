@@ -2,6 +2,7 @@ import Link from "next/link";
 import ProductActions from "@/components/ProductActions";
 import ProductCard from "@/components/ProductCard";
 import ProductGallery from "@/components/ProductGallery";
+import ProductHeaderActions from "@/components/ProductHeaderActions";
 import ExpandableDescription from "@/components/ExpandableDescription";
 import { formatPrice } from "@/lib/catalog";
 import { getProductBySlug, getProducts, getRelatedProducts, getCollections } from "@/lib/catalog-store";
@@ -27,6 +28,10 @@ export async function generateMetadata({ params }) {
 function getDisplayPricing(price) {
   const originalPrice = Math.ceil(price / 0.83 / 10) * 10;
   return { originalPrice };
+}
+
+function formatCollectionName(slug) {
+  return slug?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') || "Collection";
 }
 
 export default async function ProductDetailPage({ params }) {
@@ -132,20 +137,21 @@ export default async function ProductDetailPage({ params }) {
                 <ProductGallery images={product.images} name={product.name} />
 
                 <div>
-                  <h1 className="text-3xl font-serif text-[#241f20] lg:text-4xl">
-                    {product.name}
-                  </h1>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="mb-2 text-[12px] font-bold uppercase tracking-widest text-[#d8a734]">
+                        {formatCollectionName(product.collection)}
+                      </p>
+                      <h1 className="text-2xl font-normal text-[#241f20] lg:text-3xl">
+                        {product.name}
+                      </h1>
+                    </div>
+                    <ProductHeaderActions product={product} />
+                  </div>
                   
                   <div className="mt-4 flex items-end gap-3">
                     <span className="text-3xl font-serif text-[#d8a734]">{formatPrice(product.price)}</span>
                     <span className="mb-1 text-lg text-[#8b8b8b] line-through">{formatPrice(originalPrice)}</span>
-                  </div>
-
-                  {/* Rating / Checkmark Mock */}
-                  <div className="mt-4 flex h-6 w-6 items-center justify-center rounded-full bg-[#4e0c38] text-white">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
                   </div>
 
                   <div className="my-8 h-[1px] w-full bg-[#f0f0f0]" />
@@ -204,7 +210,7 @@ export default async function ProductDetailPage({ params }) {
                 <div className="mt-4 h-[2px] w-12 bg-[#d8a734]" />
               </div>
 
-              <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 sm:gap-x-6 sm:gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
                 {relatedProducts.map((item) => (
                   <ProductCard key={item._id} product={item} />
                 ))}

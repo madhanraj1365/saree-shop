@@ -13,6 +13,9 @@ function getDisplayPricing(price) {
   return { originalPrice };
 }
 
+const formatCollectionName = (slug) => 
+  slug?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') || "Collection";
+
 export default function ProductCard({ product }) {
   const [wishlistMessage, setWishlistMessage] = useState("");
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -111,7 +114,7 @@ export default function ProductCard({ product }) {
 
   return (
     <Link prefetch={true} href={`/products/${product.slug}`} className="group block h-full">
-      <article className="flex h-full flex-col overflow-hidden rounded-[8px] bg-white shadow-[0_8px_24px_rgba(36,31,32,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_34px_rgba(95,0,21,0.14)]">
+      <article className="flex h-full flex-col overflow-hidden rounded-[8px] bg-white shadow-[0_8px_24px_rgba(36,31,32,0.08)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#fcf7e6] hover:shadow-[0_14px_34px_rgba(139,0,28,0.18)]">
         <div className="relative aspect-[3/4] overflow-hidden bg-[#eee8dd]">
           {product.images && product.images.map((img, index) => (
             <Image
@@ -149,9 +152,9 @@ export default function ProductCard({ product }) {
                 type="button"
                 onClick={handleWishlist}
                 title="Add to wishlist"
-                className="grid h-11 w-11 place-items-center rounded-full border border-[#ead8b7] bg-white text-[#cf2f61] shadow-[0_4px_18px_rgba(36,31,32,0.16)] transition hover:border-[#cf2f61] hover:bg-[#fff4b8]"
+                className={`grid h-8 w-8 sm:h-11 sm:w-11 place-items-center rounded-full border bg-white shadow-[0_4px_18px_rgba(36,31,32,0.16)] transition-all duration-300 active:scale-90 ${isInWishlist ? 'border-[#8b001c] text-[#8b001c] scale-110 hover:scale-125' : 'border-[#ead8b7] text-[#cf2f61] hover:border-[#8b001c] hover:bg-[#fff4b8] hover:scale-110'}`}
               >
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill={isInWishlist ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                <svg className="h-4 w-4 sm:h-6 sm:w-6" viewBox="0 0 24 24" fill={isInWishlist ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                   <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
                 </svg>
               </button>
@@ -167,9 +170,9 @@ export default function ProductCard({ product }) {
                 type="button"
                 onClick={handleShare}
                 title="Share this product"
-                className="grid h-11 w-11 place-items-center rounded-full border border-[#ead8b7] bg-white text-[#d8a734] shadow-[0_4px_18px_rgba(36,31,32,0.16)] transition hover:border-[#d8a734] hover:bg-[#fff4b8]"
+                className="grid h-8 w-8 sm:h-11 sm:w-11 place-items-center rounded-full border border-[#ead8b7] bg-white text-[#d8a734] shadow-[0_4px_18px_rgba(36,31,32,0.16)] transition hover:border-[#d8a734] hover:bg-[#fff4b8]"
               >
-                <Share2 className="h-5 w-5" />
+                <Share2 className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <p className="mt-1 text-[13px] text-[#241f20]">Share</p>
             </div>
@@ -177,12 +180,15 @@ export default function ProductCard({ product }) {
         </div>
 
         <div className="flex flex-1 flex-col justify-end px-3 pb-5 pt-9">
-          <h3 className="line-clamp-1 text-[18px] font-normal leading-tight text-[#1f1f1f] transition-colors group-hover:text-[#8b001c]">
+          <p className="text-[11px] sm:text-[13px] font-bold uppercase tracking-widest text-[#d8a734] mb-1">
+            {formatCollectionName(product.collection)}
+          </p>
+          <h3 className="line-clamp-2 text-[14px] sm:text-[18px] font-normal leading-tight text-[#1f1f1f] transition-colors group-hover:text-[#8b001c]">
             {product.name}
           </h3>
           <div className="mt-3 flex flex-wrap items-baseline gap-2">
-            <span className="text-[18px] font-black text-black">{formatPrice(product.price)}</span>
-            <span className="text-[15px] font-medium text-[#8b8b8b] line-through">{formatPrice(originalPrice)}</span>
+            <span className="text-[16px] sm:text-[18px] font-black text-black">{formatPrice(product.price)}</span>
+            <span className="text-[13px] sm:text-[15px] font-medium text-[#8b8b8b] line-through">{formatPrice(originalPrice)}</span>
           </div>
         </div>
       </article>

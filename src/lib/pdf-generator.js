@@ -137,35 +137,22 @@ export async function generateInvoiceBuffer(orderData, baseUrl = "") {
         .text(`Status: PAID`, rightEdge - 170, 72, { width: 160, align: "right" });
 
       // ═══════════════════════════════════════════════
-      // CUSTOMER DETAILS (Two-column: Bill To | Ship To)
+      // CUSTOMER DETAILS (Shipping Address Only)
       // ═══════════════════════════════════════════════
 
       const addrTop = 115;
 
-      // Bill To box
-      doc.rect(leftMargin, addrTop, contentWidth / 2 - 5, 75)
+      // Shipping Address box
+      doc.rect(leftMargin, addrTop, contentWidth, 75)
         .lineWidth(0.5).strokeColor("#dddddd").stroke();
       doc.fontSize(8).font("Helvetica-Bold").fillColor("#8b001c")
-        .text("BILL TO", leftMargin + 10, addrTop + 8);
+        .text("SHIPPING ADDRESS", leftMargin + 10, addrTop + 8);
       doc.fontSize(9).font("Helvetica-Bold").fillColor("#000000")
         .text(orderData.address.fullName || "N/A", leftMargin + 10, addrTop + 22);
       doc.fontSize(8).font("Helvetica").fillColor("#444444")
-        .text(`${orderData.address.completeAddress || ""}`, leftMargin + 10, addrTop + 35, { width: contentWidth / 2 - 30 })
+        .text(`${orderData.address.completeAddress || ""}`, leftMargin + 10, addrTop + 35, { width: contentWidth - 30 })
         .text(`${orderData.address.city || ""}, ${orderData.address.state || ""} - ${orderData.address.pincode || ""}`, leftMargin + 10, addrTop + 48)
         .text(`Phone: +91 ${orderData.address.mobileNo || "N/A"}`, leftMargin + 10, addrTop + 60);
-
-      // Ship To box
-      const shipX = leftMargin + contentWidth / 2 + 5;
-      doc.rect(shipX, addrTop, contentWidth / 2 - 5, 75)
-        .lineWidth(0.5).strokeColor("#dddddd").stroke();
-      doc.fontSize(8).font("Helvetica-Bold").fillColor("#8b001c")
-        .text("SHIP TO", shipX + 10, addrTop + 8);
-      doc.fontSize(9).font("Helvetica-Bold").fillColor("#000000")
-        .text(orderData.address.fullName || "N/A", shipX + 10, addrTop + 22);
-      doc.fontSize(8).font("Helvetica").fillColor("#444444")
-        .text(`${orderData.address.completeAddress || ""}`, shipX + 10, addrTop + 35, { width: contentWidth / 2 - 30 })
-        .text(`${orderData.address.city || ""}, ${orderData.address.state || ""} - ${orderData.address.pincode || ""}`, shipX + 10, addrTop + 48)
-        .text(`Phone: +91 ${orderData.address.mobileNo || "N/A"}`, shipX + 10, addrTop + 60);
 
       // ═══════════════════════════════════════════════
       // PRODUCTS TABLE

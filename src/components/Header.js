@@ -116,14 +116,14 @@ export default function Header() {
 
   useEffect(() => {
     if (animateCart) {
-      const timer = setTimeout(() => setAnimateCart(false), 300);
+      const timer = setTimeout(() => setAnimateCart(false), 500);
       return () => clearTimeout(timer);
     }
   }, [animateCart]);
 
   useEffect(() => {
     if (animateWishlist) {
-      const timer = setTimeout(() => setAnimateWishlist(false), 300);
+      const timer = setTimeout(() => setAnimateWishlist(false), 500);
       return () => clearTimeout(timer);
     }
   }, [animateWishlist]);
@@ -188,7 +188,7 @@ export default function Header() {
         <div className="flex items-center justify-end gap-2 sm:gap-3">
           <Link
             href="/wishlist"
-            className={`group relative flex h-10 w-10 items-center justify-center rounded-full border border-[#ead8b7] bg-white text-[#8b001c] transition-all hover:border-[#d8a734] hover:bg-[#fff4b8] hover:shadow-sm ${animateWishlist ? 'scale-110' : ''}`}
+            className={`group relative flex h-10 w-10 items-center justify-center rounded-full border border-[#ead8b7] bg-white text-[#8b001c] transition-all duration-300 hover:border-[#d8a734] hover:bg-[#fff4b8] hover:shadow-sm ${animateWishlist ? 'scale-125 bg-[#fff4b8] border-[#8b001c] shadow-[0_0_15px_rgba(139,0,28,0.3)]' : ''}`}
             aria-label="Wishlist"
           >
             <svg className="h-5 w-5 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -202,7 +202,7 @@ export default function Header() {
           </Link>
           <Link
             href="/cart"
-            className={`group relative flex h-10 w-10 items-center justify-center rounded-full border border-[#ead8b7] bg-white text-[#8b001c] transition-all hover:border-[#d8a734] hover:bg-[#fff4b8] hover:shadow-sm ${animateCart ? 'scale-110' : ''}`}
+            className={`group relative flex h-10 w-10 items-center justify-center rounded-full border border-[#ead8b7] bg-white text-[#8b001c] transition-all duration-300 hover:border-[#d8a734] hover:bg-[#fff4b8] hover:shadow-sm ${animateCart ? 'scale-125 bg-[#fff4b8] border-[#8b001c] shadow-[0_0_15px_rgba(139,0,28,0.3)]' : ''}`}
             aria-label="Cart"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
