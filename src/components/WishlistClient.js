@@ -69,6 +69,9 @@ export default function WishlistClient() {
     const newItems = items.filter(item => item.productId !== productId);
     setItems(newItems);
 
+    localStorage.setItem("sareeWishlist", JSON.stringify(newItems));
+    window.dispatchEvent(new CustomEvent("saree-wishlist-change", { detail: { action: 'remove' } }));
+
     const auth = getFirebaseClientAuth();
     const user = auth.currentUser;
 
@@ -86,8 +89,6 @@ export default function WishlistClient() {
       } catch (err) {
         console.error("Cloud wishlist remove failed", err);
       }
-    } else {
-      localStorage.setItem("sareeWishlist", JSON.stringify(newItems));
     }
   }
 

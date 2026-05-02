@@ -102,15 +102,25 @@ export default function Header() {
       }
     };
 
+    const handleWishlistEvent = (e) => {
+      if (e?.detail?.action === 'add') setAnimateWishlist(true);
+      updateCount();
+    };
+
+    const handleCartEvent = (e) => {
+      if (e?.detail?.action === 'add') setAnimateCart(true);
+      updateCount();
+    };
+
     updateCount();
     window.addEventListener("storage", updateCount);
-    window.addEventListener("saree-cart-change", updateCount);
-    window.addEventListener("saree-wishlist-change", updateCount);
+    window.addEventListener("saree-cart-change", handleCartEvent);
+    window.addEventListener("saree-wishlist-change", handleWishlistEvent);
 
     return () => {
       window.removeEventListener("storage", updateCount);
-      window.removeEventListener("saree-cart-change", updateCount);
-      window.removeEventListener("saree-wishlist-change", updateCount);
+      window.removeEventListener("saree-cart-change", handleCartEvent);
+      window.removeEventListener("saree-wishlist-change", handleWishlistEvent);
     };
   }, [user, cartCount, wishlistCount]);
 

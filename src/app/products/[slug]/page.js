@@ -133,12 +133,12 @@ export default async function ProductDetailPage({ params }) {
                 </Link>
               </div>
 
-              <div className="grid items-start gap-12 md:grid-cols-2">
+              <div className="grid items-start gap-6 lg:gap-8 md:grid-cols-2">
                 <ProductGallery images={product.images} name={product.name} />
 
                 <div>
                   <div className="flex items-start justify-between gap-4">
-                    <div>
+                    <div className="w-full">
                       <p className="mb-2 text-[12px] font-bold uppercase tracking-widest text-[#d8a734]">
                         {formatCollectionName(product.collection)}
                       </p>
@@ -146,7 +146,6 @@ export default async function ProductDetailPage({ params }) {
                         {product.name}
                       </h1>
                     </div>
-                    <ProductHeaderActions product={product} />
                   </div>
                   
                   <div className="mt-4 flex items-end gap-3">
@@ -154,22 +153,23 @@ export default async function ProductDetailPage({ params }) {
                     <span className="mb-1 text-lg text-[#8b8b8b] line-through">{formatPrice(originalPrice)}</span>
                   </div>
 
-                  <div className="my-8 h-[1px] w-full bg-[#f0f0f0]" />
+                  <div className="my-5 h-[1px] w-full bg-[#f0f0f0]" />
 
                   {/* Size Selection */}
                   <div>
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-bold uppercase tracking-widest text-[#241f20]">Select Size</p>
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-3 flex items-center justify-between gap-4">
                       <button className="rounded border border-[#333333] bg-[#333333] px-6 py-2 text-sm font-bold text-white">
                         Free Size
                       </button>
+                      <ProductHeaderActions product={product} />
                     </div>
                   </div>
 
                   {/* Stock Status */}
-                  <div className="mt-6 flex items-center gap-2 text-sm font-medium text-[#32b54a]">
+                  <div className="mt-4 flex items-center gap-2 text-sm font-medium text-[#32b54a]">
                     <span className="h-2 w-2 rounded-full bg-[#32b54a]" />
                     In Stock ({product.stock} available)
                   </div>
@@ -178,7 +178,7 @@ export default async function ProductDetailPage({ params }) {
 
                   <ExpandableDescription text={product.description} />
                   
-                  <div className="mt-8 rounded-[4px] border border-[#f0f0f0] p-5 shadow-sm">
+                  <div className="mt-6 rounded-[4px] border border-[#f0f0f0] p-5 shadow-sm">
                     <h2 className="text-sm font-bold uppercase tracking-widest text-[#241f20]">Product Details</h2>
                     <ul className="mt-4 grid gap-3 text-sm leading-relaxed text-[#5c4d43]">
                       {product.details.map((detail) => (

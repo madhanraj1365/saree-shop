@@ -21,37 +21,33 @@ export default function ProductHeaderActions({ product }) {
     event.preventDefault();
     event.stopPropagation();
 
-    const items = JSON.parse(localStorage.getItem("sareeWishlist") || "[]");
-    if (!items.find((item) => item.productId === product._id)) {
-      items.push({ productId: product._id, quantity: 1 });
+    let items = JSON.parse(localStorage.getItem("sareeWishlist") || "[]");
+    const exists = items.find((item) => item.productId === product._id);
+
+    if (exists) {
+      items = items.filter((item) => item.productId !== product._id);
+      setIsInWishlist(false);
       localStorage.setItem("sareeWishlist", JSON.stringify(items));
+      window.dispatchEvent(new CustomEvent("saree-wishlist-change", { detail: { action: 'remove' } }));
+    } else {
+      items.push({ productId: product._id, quantity: 1 });
+      setIsInWishlist(true);
+      localStorage.setItem("sareeWishlist", JSON.stringify(items));
+      window.dispatchEvent(new CustomEvent("saree-wishlist-change", { detail: { action: 'add' } }));
     }
-    setIsInWishlist(true);
-    window.dispatchEvent(new Event("saree-wishlist-change"));
 
     const auth = getFirebaseClientAuth();
     if (auth.currentUser) {
       try {
         const token = await auth.currentUser.getIdToken();
-        const getRes = await fetch("/api/wishlist", {
-          headers: { Authorization: `Bearer ${token}` },
+        await fetch("/api/wishlist", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ items }),
         });
-        let cloudItems = [];
-        if (getRes.ok) {
-          const data = await getRes.json();
-          cloudItems = data.items || [];
-        }
-        if (!cloudItems.find((item) => item.productId === product._id)) {
-          cloudItems.push({ productId: product._id, quantity: 1 });
-          await fetch("/api/wishlist", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ items: cloudItems }),
-          });
-        }
       } catch (err) {
         console.error("Failed to sync wishlist", err);
       }

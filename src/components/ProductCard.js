@@ -44,39 +44,37 @@ export default function ProductCard({ product }) {
     event.preventDefault();
     event.stopPropagation();
 
-    const items = JSON.parse(localStorage.getItem("sareeWishlist") || "[]");
-    if (!items.find((item) => item.productId === product._id)) {
-      items.push({ productId: product._id, quantity: 1 });
+    let items = JSON.parse(localStorage.getItem("sareeWishlist") || "[]");
+    const exists = items.find((item) => item.productId === product._id);
+
+    if (exists) {
+      items = items.filter((item) => item.productId !== product._id);
+      setIsInWishlist(false);
+      setWishlistMessage("Removed");
       localStorage.setItem("sareeWishlist", JSON.stringify(items));
+      window.dispatchEvent(new CustomEvent("saree-wishlist-change", { detail: { action: 'remove' } }));
+    } else {
+      items.push({ productId: product._id, quantity: 1 });
+      setIsInWishlist(true);
+      setWishlistMessage("Added");
+      localStorage.setItem("sareeWishlist", JSON.stringify(items));
+      window.dispatchEvent(new CustomEvent("saree-wishlist-change", { detail: { action: 'add' } }));
     }
-    setIsInWishlist(true);
-    setWishlistMessage("Added");
-    window.dispatchEvent(new Event("saree-wishlist-change"));
+    
     setTimeout(() => setWishlistMessage(""), 1800);
 
     const auth = getFirebaseClientAuth();
     if (auth.currentUser) {
       try {
         const token = await auth.currentUser.getIdToken();
-        const getRes = await fetch("/api/wishlist", {
-          headers: { Authorization: `Bearer ${token}` },
+        await fetch("/api/wishlist", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ items }),
         });
-        let cloudItems = [];
-        if (getRes.ok) {
-          const data = await getRes.json();
-          cloudItems = data.items || [];
-        }
-        if (!cloudItems.find((item) => item.productId === product._id)) {
-          cloudItems.push({ productId: product._id, quantity: 1 });
-          await fetch("/api/wishlist", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ items: cloudItems }),
-          });
-        }
       } catch (err) {
         console.error("Failed to sync wishlist", err);
       }
@@ -113,9 +111,9 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <Link prefetch={true} href={`/products/${product.slug}`} className="group block h-full">
-      <article className="flex h-full flex-col overflow-hidden rounded-[8px] bg-white shadow-[0_8px_24px_rgba(36,31,32,0.08)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#fcf7e6] hover:shadow-[0_14px_34px_rgba(139,0,28,0.18)]">
-        <div className="relative aspect-[3/4] overflow-hidden bg-[#eee8dd]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-[8px] bg-white shadow-[0_8px_24px_rgba(36,31,32,0.08)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#fcf7e6] hover:shadow-[0_14px_34px_rgba(139,0,28,0.18)]">
+      <Link prefetch={true} href={`/products/${product.slug}`} className="absolute inset-0 z-0" aria-label={`View ${product.name}`} />
+      <div className="relative aspect-[3/4] overflow-hidden bg-[#eee8dd] pointer-events-none">
           {product.images && product.images.map((img, index) => (
             <Image
               key={index}
@@ -139,14 +137,14 @@ export default function ProductCard({ product }) {
           {product.images && product.images.length > 1 && (
             <button
               onClick={handleNextImage}
-              className="absolute top-1/2 right-2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-full bg-white/40 text-black/70 backdrop-blur-sm transition-all hover:bg-white/60 hover:text-black z-10"
+              className="absolute top-1/2 right-2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-full bg-white/40 text-black/70 backdrop-blur-sm transition-all hover:bg-white/60 hover:text-black z-10 pointer-events-auto"
               aria-label="Next image"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
           )}
 
-          <div className="absolute -bottom-5 right-4 flex items-end gap-3">
+          <div className="absolute -bottom-5 right-4 flex items-end gap-3 z-10 pointer-events-auto">
             <div className="relative text-center">
               <button
                 type="button"
@@ -179,7 +177,7 @@ export default function ProductCard({ product }) {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col justify-end px-3 pb-5 pt-9">
+        <div className="relative z-10 flex flex-col px-3 pb-3 pt-2 pointer-events-none">
           <p className="text-[11px] sm:text-[13px] font-bold uppercase tracking-widest text-[#d8a734] mb-1">
             {formatCollectionName(product.collection)}
           </p>
@@ -191,7 +189,6 @@ export default function ProductCard({ product }) {
             <span className="text-[13px] sm:text-[15px] font-medium text-[#8b8b8b] line-through">{formatPrice(originalPrice)}</span>
           </div>
         </div>
-      </article>
-    </Link>
+    </article>
   );
 }
