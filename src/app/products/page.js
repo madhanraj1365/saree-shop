@@ -35,7 +35,7 @@ export default async function ProductsPage({ searchParams }) {
       <main className="min-h-screen bg-white">
         {/* Header Section */}
         <section className="border-b border-[#ead8b7] bg-[#f4f4f4] px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl text-center">
+          <div className="mx-auto max-w-[1600px] text-center">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#d8a734]">
               The Digital Showroom
             </p>
@@ -50,7 +50,7 @@ export default async function ProductsPage({ searchParams }) {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-[1600px] px-4 py-16 sm:px-6 lg:px-8">
           {/* Filters */}
           <div className="mb-12 space-y-6">
             <div className="flex flex-wrap items-center justify-center gap-3">
@@ -98,7 +98,7 @@ export default async function ProductsPage({ searchParams }) {
           </div>
 
           {/* Product Grid */}
-          <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 sm:grid-cols-3 lg:grid-cols-4">
             {visibleProducts.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}

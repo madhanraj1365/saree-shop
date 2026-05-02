@@ -10,7 +10,7 @@ export default async function Footer() {
 
   return (
     <footer id="contact" className="bg-[#2c2420] text-white">
-      <div className="mx-auto grid max-w-7xl gap-16 px-4 py-20 sm:px-6 lg:grid-cols-[1.5fr_0.8fr_0.8fr_1.2fr] lg:gap-10 lg:px-8 lg:py-28">
+      <div className="mx-auto grid max-w-[1600px] gap-16 px-4 py-20 sm:px-6 lg:grid-cols-[1.5fr_0.8fr_0.8fr_1.2fr] lg:gap-10 lg:px-12 lg:py-28">
         <div>
           <div className="overflow-hidden rounded-[8px] border border-white/10 w-fit">
             <img

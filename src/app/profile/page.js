@@ -11,7 +11,6 @@ export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [addressType, setAddressType] = useState("HOME");
-  const [isBillingDefault, setIsBillingDefault] = useState(false);
   const [isShippingDefault, setIsShippingDefault] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -57,7 +56,6 @@ export default function ProfilePage() {
               landmark: data.profile.landmark || prev.landmark,
             }));
             if (data.profile.addressType) setAddressType(data.profile.addressType);
-            if (data.profile.isBillingDefault !== undefined) setIsBillingDefault(data.profile.isBillingDefault);
             if (data.profile.isShippingDefault !== undefined) setIsShippingDefault(data.profile.isShippingDefault);
           } else {
             setIsEditing(true);
@@ -96,7 +94,6 @@ export default function ProfilePage() {
       addressType,
       ...formData,
       country: "India",
-      isBillingDefault,
       isShippingDefault,
     };
 
@@ -117,7 +114,6 @@ export default function ProfilePage() {
           state: formData.state,
           landmark: formData.landmark,
           addressType,
-          isBillingDefault,
           isShippingDefault,
         }),
       });
@@ -125,7 +121,6 @@ export default function ProfilePage() {
       sessionStorage.setItem("checkoutAddress", JSON.stringify({
         ...addressData,
         type: addressType,
-        isDefaultBilling: isBillingDefault,
         isDefaultShipping: isShippingDefault,
       }));
 
@@ -210,9 +205,8 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
                 <span className="font-bold text-[#555]">Defaults</span>
                 <span className="sm:col-span-2 text-xs text-[#777] flex items-center gap-2 flex-wrap">
-                  {isBillingDefault && <span className="bg-[#fff4b8] text-[#8b001c] px-2 py-1 rounded">Default Billing</span>}
                   {isShippingDefault && <span className="bg-[#fff4b8] text-[#8b001c] px-2 py-1 rounded">Default Shipping</span>}
-                  {!isBillingDefault && !isShippingDefault && "None"}
+                  {!isShippingDefault && "None"}
                 </span>
               </div>
             </div>
@@ -249,15 +243,6 @@ export default function ProfilePage() {
                 <label className="flex cursor-pointer items-center gap-3">
                   <input
                     type="checkbox"
-                    checked={isBillingDefault}
-                    onChange={(e) => setIsBillingDefault(e.target.checked)}
-                    className="h-5 w-5 rounded border-[#ccc] text-[#8b001c] focus:ring-[#8b001c]"
-                  />
-                  <span className="text-sm text-[#555]">Mark as Default Billing Address</span>
-                </label>
-                <label className="flex cursor-pointer items-center gap-3">
-                  <input
-                    type="checkbox"
                     checked={isShippingDefault}
                     onChange={(e) => setIsShippingDefault(e.target.checked)}
                     className="h-5 w-5 rounded border-[#ccc] text-[#8b001c] focus:ring-[#8b001c]"
@@ -268,53 +253,52 @@ export default function ProfilePage() {
 
               <div className="grid gap-6 md:grid-cols-2">
                 {/* Full Name */}
-                <div className="flex flex-col gap-1 rounded border border-[#e0e0e0] p-3">
-                  <label className="text-xs text-[#888]">Full Name:</label>
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Full Name</label>
                   <input
                     type="text"
                     name="fullName"
                     required
                     value={formData.fullName}
                     onChange={handleChange}
-                    className="w-full border-none bg-transparent p-0 text-sm font-medium text-[#333] focus:ring-0"
+                    className="w-full rounded-[4px] border border-[#e0e0e0] bg-[#fafafa] px-4 py-3 text-sm text-[#333] transition focus:border-[#d8a734] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#d8a734]"
                   />
                 </div>
 
                 {/* Country */}
-                <div className="flex flex-col gap-1 rounded border border-[#e0e0e0] p-3 opacity-70">
-                  <label className="text-xs text-[#888]">Country:</label>
-                  <select disabled className="w-full border-none bg-transparent p-0 text-sm font-medium text-[#333] focus:ring-0">
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Country</label>
+                  <select disabled className="w-full rounded-[4px] border border-[#e0e0e0] bg-[#f0f0f0] px-4 py-3 text-sm text-[#777] focus:outline-none cursor-not-allowed">
                     <option>India</option>
                   </select>
                 </div>
 
                 {/* Mobile No */}
-                <div className="flex flex-col gap-1 rounded border border-[#e0e0e0] p-3">
-                  <label className="text-xs text-[#888]">Mobile No:</label>
-                  <div className="flex items-center">
-                    <select className="border-none bg-transparent p-0 pr-4 text-sm font-medium text-[#333] focus:ring-0">
-                      <option>+91</option>
-                    </select>
-                    <div className="mx-2 h-5 w-[1px] bg-[#e0e0e0]" />
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Mobile No</label>
+                  <div className="flex items-center rounded-[4px] border border-[#e0e0e0] bg-[#fafafa] transition focus-within:border-[#d8a734] focus-within:bg-white focus-within:ring-1 focus-within:ring-[#d8a734]">
+                    <div className="flex h-full items-center pl-4 pr-3 text-sm font-medium text-[#555] border-r border-[#e0e0e0]">
+                      +91
+                    </div>
                     <input
                       type="tel"
                       name="mobileNo"
                       required
                       value={formData.mobileNo}
                       onChange={handleChange}
-                      className="w-full border-none bg-transparent p-0 text-sm font-medium text-[#333] focus:ring-0"
+                      className="w-full border-none bg-transparent px-4 py-3 text-sm text-[#333] focus:outline-none focus:ring-0"
                     />
                   </div>
                 </div>
 
                 {/* State */}
-                <div className="flex flex-col gap-1 rounded border border-[#e0e0e0] p-3">
-                  <label className="text-xs text-[#888]">State:</label>
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">State</label>
                   <select
                     name="state"
                     value={formData.state}
                     onChange={handleChange}
-                    className="w-full border-none bg-transparent p-0 text-sm font-medium text-[#333] focus:ring-0"
+                    className="w-full rounded-[4px] border border-[#e0e0e0] bg-[#fafafa] px-4 py-3 text-sm text-[#333] transition focus:border-[#d8a734] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#d8a734]"
                   >
                     {indiaStates.map((state) => (
                       <option key={state} value={state}>
@@ -325,54 +309,54 @@ export default function ProfilePage() {
                 </div>
 
                 {/* City */}
-                <div className="flex flex-col gap-1 rounded border border-[#e0e0e0] p-3">
-                  <label className="text-xs text-[#888]">City:</label>
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">City</label>
                   <input
                     type="text"
                     name="city"
                     required
                     value={formData.city}
                     onChange={handleChange}
-                    className="w-full border-none bg-transparent p-0 text-sm font-medium text-[#333] focus:ring-0"
+                    className="w-full rounded-[4px] border border-[#e0e0e0] bg-[#fafafa] px-4 py-3 text-sm text-[#333] transition focus:border-[#d8a734] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#d8a734]"
                   />
                 </div>
 
                 {/* Pincode */}
-                <div className="flex flex-col gap-1 rounded border border-[#e0e0e0] p-3">
-                  <label className="text-xs text-[#888]">Pincode:</label>
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Pincode</label>
                   <input
                     type="text"
                     name="pincode"
                     required
                     value={formData.pincode}
                     onChange={handleChange}
-                    className="w-full border-none bg-transparent p-0 text-sm font-medium text-[#333] focus:ring-0"
+                    className="w-full rounded-[4px] border border-[#e0e0e0] bg-[#fafafa] px-4 py-3 text-sm text-[#333] transition focus:border-[#d8a734] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#d8a734]"
                   />
                 </div>
               </div>
 
               {/* Complete Address */}
-              <div className="mt-6 flex flex-col gap-1 rounded border border-[#e0e0e0] p-3">
-                <label className="text-xs text-[#888]">Complete Address:</label>
+              <div className="mt-6">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Complete Address</label>
                 <textarea
                   name="completeAddress"
                   required
                   rows={3}
                   value={formData.completeAddress}
                   onChange={handleChange}
-                  className="w-full resize-y border-none bg-transparent p-0 text-sm font-medium text-[#333] focus:ring-0"
+                  className="w-full resize-y rounded-[4px] border border-[#e0e0e0] bg-[#fafafa] px-4 py-3 text-sm text-[#333] transition focus:border-[#d8a734] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#d8a734]"
                 />
               </div>
 
               {/* Landmark */}
-              <div className="mt-6 flex flex-col gap-1 rounded border border-[#e0e0e0] p-3">
-                <label className="text-xs text-[#888]">Landmark:</label>
+              <div className="mt-6">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Landmark (Optional)</label>
                 <input
                   type="text"
                   name="landmark"
                   value={formData.landmark}
                   onChange={handleChange}
-                  className="w-full border-none bg-transparent p-0 text-sm font-medium text-[#333] focus:ring-0"
+                  className="w-full rounded-[4px] border border-[#e0e0e0] bg-[#fafafa] px-4 py-3 text-sm text-[#333] transition focus:border-[#d8a734] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#d8a734]"
                 />
               </div>
 

@@ -199,27 +199,11 @@ export default function OrderSummaryPage() {
             </section>
 
             {/* Addresses */}
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid gap-6">
               {/* Shipping Address */}
               <section className="bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-[#555]">SHIPPING ADDRESS</h3>
-                  <Link href="/profile" className="text-[10px] font-bold text-[#d8a734] underline hover:text-[#c4962d]">CHANGE</Link>
-                </div>
-                <div className="space-y-1 text-sm text-[#333]">
-                  <p className="font-bold">{address.fullName}</p>
-                  <p>{address.completeAddress}</p>
-                  <p>{address.landmark}</p>
-                  <p>{address.city}, {address.state} - {address.pincode}</p>
-                  <p>{address.country}</p>
-                  <p className="mt-2 text-xs text-[#777]">T: +91 {address.mobileNo}</p>
-                </div>
-              </section>
-
-              {/* Billing Address */}
-              <section className="bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#555]">BILLING ADDRESS</h3>
                   <Link href="/profile" className="text-[10px] font-bold text-[#d8a734] underline hover:text-[#c4962d]">CHANGE</Link>
                 </div>
                 <div className="space-y-1 text-sm text-[#333]">
@@ -294,32 +278,7 @@ export default function OrderSummaryPage() {
                 <span>Amount Payable</span>
                 <span className="font-bold">{formatPrice(amountPayable)}</span>
               </div>
-
-              <div className="mt-2">
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#555]">COUPON CODE</p>
-                <div className="flex">
-                  <input
-                    type="text"
-                    placeholder="Enter Code"
-                    className="w-full border-none px-4 py-3 text-sm focus:ring-1 focus:ring-[#d8a734]"
-                  />
-                  <button className="bg-[#3b1111] px-6 text-xs font-bold text-white transition hover:bg-[#250a0a]">
-                    APPLY
-                  </button>
-                </div>
-                <button className="mt-3 w-full text-center text-[10px] text-[#888] hover:text-[#555]">
-                  CANCEL
-                </button>
-              </div>
             </div>
-
-            <button
-              onClick={() => alert("CCAvenue payment integration coming soon!")}
-              className="w-full bg-[#3b1111] py-4 text-xs font-bold tracking-widest text-white transition hover:bg-[#250a0a]"
-            >
-              PAY WITH CCAVENUE (HDFC, SBI, ETC..) 💳
-            </button>
-            
             <button
               onClick={handleRazorpay}
               disabled={isProcessing}

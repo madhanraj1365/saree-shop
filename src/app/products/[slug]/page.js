@@ -26,8 +26,7 @@ export async function generateMetadata({ params }) {
 
 function getDisplayPricing(price) {
   const originalPrice = Math.ceil(price / 0.83 / 10) * 10;
-  const discount = Math.max(1, Math.round(((originalPrice - price) / originalPrice) * 100));
-  return { originalPrice, discount };
+  return { originalPrice };
 }
 
 export default async function ProductDetailPage({ params }) {
@@ -40,12 +39,12 @@ export default async function ProductDetailPage({ params }) {
 
   const relatedProducts = await getRelatedProducts(product);
   const collections = await getCollections();
-  const { originalPrice, discount } = getDisplayPricing(product.price);
+  const { originalPrice } = getDisplayPricing(product.price);
 
   return (
     <>
       <main className="min-h-screen bg-white pb-20">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8">
           
           <div className="grid lg:grid-cols-[280px_1fr] gap-10">
             {/* Left Sidebar */}
@@ -140,7 +139,6 @@ export default async function ProductDetailPage({ params }) {
                   <div className="mt-4 flex items-end gap-3">
                     <span className="text-3xl font-serif text-[#d8a734]">{formatPrice(product.price)}</span>
                     <span className="mb-1 text-lg text-[#8b8b8b] line-through">{formatPrice(originalPrice)}</span>
-                    <span className="mb-1 rounded bg-[#effff2] px-2 py-0.5 text-sm font-bold text-[#32b54a]">{discount}% Off</span>
                   </div>
 
                   {/* Rating / Checkmark Mock */}
@@ -156,7 +154,6 @@ export default async function ProductDetailPage({ params }) {
                   <div>
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-bold uppercase tracking-widest text-[#241f20]">Select Size</p>
-                      <button className="text-xs font-bold text-[#d8a734] hover:underline">size chart</button>
                     </div>
                     <div className="mt-3">
                       <button className="rounded border border-[#333333] bg-[#333333] px-6 py-2 text-sm font-bold text-white">
@@ -196,7 +193,7 @@ export default async function ProductDetailPage({ params }) {
         {/* Similar Drapes */}
         {relatedProducts.length > 0 && (
           <section className="mt-20 border-t border-[#ead8b7] bg-[#f4f4f4] py-20">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
               <div className="mb-14 flex flex-col items-center text-center">
                 <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#d8a734]">
                   Similar Drapes

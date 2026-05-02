@@ -1,5 +1,5 @@
 export const shopDetails = {
-  name: "SMS TEX SAREES",
+  name: "SMS Tex",
   shortName: "SMS Tex",
   locationLabel: "Elampillai",
   addressLines: [

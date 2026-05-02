@@ -8,6 +8,10 @@ export default function ProductGallery({ images, name }) {
   const [autoSlide, setAutoSlide] = useState(true);
   const timerRef = useRef(null);
 
+  const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+  const imageRef = useRef(null);
+
   useEffect(() => {
     if (autoSlide && images.length > 1) {
       timerRef.current = setInterval(() => {
@@ -34,6 +38,14 @@ export default function ProductGallery({ images, name }) {
     setCurrentIndex(index);
   };
 
+  const handleMouseMove = (e) => {
+    if (!imageRef.current) return;
+    const { left, top, width, height } = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setLensPosition({ x, y });
+  };
+
   return (
     <div className="grid gap-6 sm:grid-cols-[80px_1fr] lg:grid-cols-[100px_1fr]">
       <div className="hidden flex-col gap-4 sm:flex">
@@ -54,7 +66,13 @@ export default function ProductGallery({ images, name }) {
         ))}
       </div>
       
-      <div className="group relative overflow-hidden rounded-xl border border-[#eaddcf] bg-[#fbf9f6] shadow-[0_4px_20px_rgba(44,36,32,0.02)]">
+      <div 
+        className="group relative overflow-hidden rounded-xl border border-[#eaddcf] bg-[#fbf9f6] shadow-[0_4px_20px_rgba(44,36,32,0.02)] cursor-crosshair"
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+        onMouseMove={handleMouseMove}
+        ref={imageRef}
+      >
         <Image
           src={images[currentIndex] || "/placeholder.jpg"}
           alt={name}
@@ -64,6 +82,18 @@ export default function ProductGallery({ images, name }) {
           className="h-auto w-full object-contain transition-opacity duration-300"
         />
         
+        {isHovering && (
+          <div 
+            className="pointer-events-none absolute inset-0 z-10 hidden sm:block"
+            style={{
+              backgroundImage: `url(${images[currentIndex] || "/placeholder.jpg"})`,
+              backgroundPosition: `${lensPosition.x}% ${lensPosition.y}%`,
+              backgroundSize: '250%',
+              backgroundColor: '#fbf9f6',
+            }}
+          />
+        )}
+
         {images.length > 1 && (
           <>
             <button 

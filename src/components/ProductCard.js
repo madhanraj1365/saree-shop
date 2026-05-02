@@ -2,20 +2,40 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getFirebaseClientAuth } from "@/lib/firebase-client";
 import { formatPrice } from "@/lib/catalog";
 
+import { Share2, ChevronRight } from "lucide-react";
+
 function getDisplayPricing(price) {
   const originalPrice = Math.ceil(price / 0.83 / 10) * 10;
-  const discount = Math.max(1, Math.round(((originalPrice - price) / originalPrice) * 100));
-
-  return { originalPrice, discount };
+  return { originalPrice };
 }
 
 export default function ProductCard({ product }) {
   const [wishlistMessage, setWishlistMessage] = useState("");
-  const { originalPrice, discount } = getDisplayPricing(product.price);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { originalPrice } = getDisplayPricing(product.price);
+
+  useEffect(() => {
+    if (!product.images || product.images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [product?.images]);
+
+  useEffect(() => {
+    const checkWishlist = () => {
+      const items = JSON.parse(localStorage.getItem("sareeWishlist") || "[]");
+      setIsInWishlist(items.some((item) => item.productId === product._id));
+    };
+    checkWishlist();
+    window.addEventListener("saree-wishlist-change", checkWishlist);
+    return () => window.removeEventListener("saree-wishlist-change", checkWishlist);
+  }, [product._id]);
 
   const handleWishlist = async (event) => {
     event.preventDefault();
@@ -26,7 +46,9 @@ export default function ProductCard({ product }) {
       items.push({ productId: product._id, quantity: 1 });
       localStorage.setItem("sareeWishlist", JSON.stringify(items));
     }
+    setIsInWishlist(true);
     setWishlistMessage("Added");
+    window.dispatchEvent(new Event("saree-wishlist-change"));
     setTimeout(() => setWishlistMessage(""), 1800);
 
     const auth = getFirebaseClientAuth();
@@ -58,25 +80,68 @@ export default function ProductCard({ product }) {
     }
   };
 
-  const handleShare = (event) => {
+  const handleShare = async (event) => {
     event.preventDefault();
     event.stopPropagation();
     const url = `${window.location.origin}/products/${product.slug}`;
-    const text = `Check out this beautiful saree: ${product.name}\n\n${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    const text = `Check out this beautiful saree: ${product.name}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: text,
+          url: url,
+        });
+      } catch (err) {
+        console.error("Error sharing", err);
+      }
+    } else {
+      await navigator.clipboard.writeText(`${text}\n\n${url}`);
+      alert("Link copied to clipboard!");
+    }
+  };
+
+  const handleNextImage = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!product.images || product.images.length <= 1) return;
+    setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
   };
 
   return (
     <Link prefetch={true} href={`/products/${product.slug}`} className="group block h-full">
       <article className="flex h-full flex-col overflow-hidden rounded-[8px] bg-white shadow-[0_8px_24px_rgba(36,31,32,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_34px_rgba(95,0,21,0.14)]">
         <div className="relative aspect-[3/4] overflow-hidden bg-[#eee8dd]">
-          <Image
-            src={product.images[0] || "/placeholder.jpg"}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover"
-          />
+          {product.images && product.images.map((img, index) => (
+            <Image
+              key={index}
+              src={img || "/placeholder.jpg"}
+              alt={`${product.name} - Image ${index + 1}`}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className={`object-cover transition-opacity duration-700 ${index === currentImageIndex ? "opacity-100" : "opacity-0"}`}
+            />
+          ))}
+          {(!product.images || product.images.length === 0) && (
+            <Image
+              src="/placeholder.jpg"
+              alt={product.name}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover"
+            />
+          )}
+
+          {product.images && product.images.length > 1 && (
+            <button
+              onClick={handleNextImage}
+              className="absolute top-1/2 right-2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-full bg-white/40 text-black/70 backdrop-blur-sm transition-all hover:bg-white/60 hover:text-black z-10"
+              aria-label="Next image"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          )}
 
           <div className="absolute -bottom-5 right-4 flex items-end gap-3">
             <div className="relative text-center">
@@ -86,7 +151,7 @@ export default function ProductCard({ product }) {
                 title="Add to wishlist"
                 className="grid h-11 w-11 place-items-center rounded-full border border-[#ead8b7] bg-white text-[#cf2f61] shadow-[0_4px_18px_rgba(36,31,32,0.16)] transition hover:border-[#cf2f61] hover:bg-[#fff4b8]"
               >
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill={isInWishlist ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                   <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
                 </svg>
               </button>
@@ -101,12 +166,10 @@ export default function ProductCard({ product }) {
               <button
                 type="button"
                 onClick={handleShare}
-                title="Share on WhatsApp"
-                className="grid h-11 w-11 place-items-center rounded-full border border-[#bce5c6] bg-white text-[#32b54a] shadow-[0_4px_18px_rgba(36,31,32,0.16)] transition hover:border-[#32b54a] hover:bg-[#effff2]"
+                title="Share this product"
+                className="grid h-11 w-11 place-items-center rounded-full border border-[#ead8b7] bg-white text-[#d8a734] shadow-[0_4px_18px_rgba(36,31,32,0.16)] transition hover:border-[#d8a734] hover:bg-[#fff4b8]"
               >
-                <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24">
-                  <path d="M17.5 14.4c-.3-.1-1.8-.9-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5.1-.2.1-.4 0-.5 0-.2-.7-1.7-.9-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4Zm-5.4 7.4A9.9 9.9 0 0 1 7 20.4l-.4-.2-3.7 1 1-3.7-.2-.4A9.9 9.9 0 1 1 12.1 21.8Z" />
-                </svg>
+                <Share2 className="h-5 w-5" />
               </button>
               <p className="mt-1 text-[13px] text-[#241f20]">Share</p>
             </div>
@@ -120,7 +183,6 @@ export default function ProductCard({ product }) {
           <div className="mt-3 flex flex-wrap items-baseline gap-2">
             <span className="text-[18px] font-black text-black">{formatPrice(product.price)}</span>
             <span className="text-[15px] font-medium text-[#8b8b8b] line-through">{formatPrice(originalPrice)}</span>
-            <span className="text-[15px] font-bold text-[#78bf18]">{discount}% Off</span>
           </div>
         </div>
       </article>
