@@ -10,14 +10,7 @@ import Link from "next/link";
 
 export const revalidate = 60; // Revalidate cache every 60 seconds
 
-const tagFilters = [
-  { label: "All Edits", value: "" },
-  { label: "Cotton-Silk", value: "cotton-silk" },
-  { label: "Bridal", value: "bridal" },
-  { label: "Pattu", value: "pattu" },
-  { label: "Wedding", value: "wedding" },
-  { label: "Couples", value: "couples" },
-];
+
 
 export default async function ProductsPage({ searchParams }) {
   const params = await searchParams;
@@ -53,28 +46,6 @@ export default async function ProductsPage({ searchParams }) {
         <section className="mx-auto max-w-[1600px] px-4 py-16 sm:px-6 lg:px-8">
           {/* Filters */}
           <div className="mb-12 space-y-6">
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <span className="mr-2 text-xs font-bold uppercase tracking-[0.12em] text-[#241f20]">Tags:</span>
-              {tagFilters.map((filter) => {
-                const href = filter.value ? `/products?tag=${filter.value}` : "/products";
-                const isActive = filter.value === activeTag && !activeCollection;
-
-                return (
-                  <Link
-                    key={filter.label}
-                    href={href}
-                    className={`rounded-full border px-5 py-2 text-xs font-semibold tracking-wide transition-all ${
-                      isActive
-                        ? "border-[#8b001c] bg-[#8b001c] text-white"
-                        : "border-[#ead8b7] text-[#241f20] hover:border-[#d8a734] hover:bg-[#fff4b8]"
-                    }`}
-                  >
-                    {filter.label}
-                  </Link>
-                );
-              })}
-            </div>
-
             <div className="flex flex-wrap items-center justify-center gap-3">
               <span className="mr-2 text-xs font-bold uppercase tracking-[0.12em] text-[#241f20]">Collections:</span>
               {collections.map((item) => {

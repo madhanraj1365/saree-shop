@@ -95,10 +95,10 @@ export default async function Home() {
 
           <div className="mt-14 flex justify-center">
             <Link
-              href="/products?tag=new-sale"
+              href="/products"
               className="group relative flex items-center gap-2 rounded-full border border-[#d8a734] bg-white px-8 py-3.5 text-xs font-bold uppercase tracking-[0.12em] text-[#8b001c] transition-all hover:bg-[#fff4b8] hover:shadow-sm"
             >
-              View the Curated Edit
+              View All Products
             </Link>
           </div>
         </section>
