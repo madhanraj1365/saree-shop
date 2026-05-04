@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { unstable_noStore as noStore } from "next/cache";
 import { getCollections } from "@/lib/catalog-store";
 import { shopDetails } from "@/lib/shop";
 
 export default async function Footer() {
-  noStore();
   const collections = await getCollections();
   const footerImage = collections[0]?.image || "/sms-tex-logo.jpg";
 

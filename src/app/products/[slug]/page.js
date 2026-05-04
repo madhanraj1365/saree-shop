@@ -5,14 +5,14 @@ import ProductGallery from "@/components/ProductGallery";
 import ProductHeaderActions from "@/components/ProductHeaderActions";
 import ExpandableDescription from "@/components/ExpandableDescription";
 import { formatPrice } from "@/lib/catalog";
-import { getProductBySlug, getProducts, getRelatedProducts, getCollections } from "@/lib/catalog-store";
+import { getProductBySlug, getAllProductSlugs, getRelatedProducts, getCollections } from "@/lib/catalog-store";
 import { notFound } from "next/navigation";
 
-export const revalidate = 60; // Revalidate cache every 60 seconds
+export const revalidate = 300; // Revalidate cache every 5 minutes
 
 export async function generateStaticParams() {
-  const products = await getProducts();
-  return products.map((product) => ({ slug: product.slug }));
+  const slugs = await getAllProductSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }) {

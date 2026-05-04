@@ -1,14 +1,14 @@
-import ProductCard from "@/components/ProductCard";
+import ProductGrid from "@/components/ProductGrid";
 import {
   getCollections,
   getCollectionBySlug,
-  getProducts,
   getProductsByCollection,
   getProductsByTag,
+  getProductCount,
 } from "@/lib/catalog-store";
 import Link from "next/link";
 
-export const revalidate = 60; // Revalidate cache every 60 seconds
+export const revalidate = 300; // Revalidate cache every 5 minutes
 
 
 
@@ -16,11 +16,11 @@ export default async function ProductsPage({ searchParams }) {
   const params = await searchParams;
   const activeCollection = params?.collection || "";
   const activeTag = params?.tag || "";
-  const [collections, products, collection, visibleProducts] = await Promise.all([
+  const [collections, collection, visibleProducts, totalCount] = await Promise.all([
     getCollections(),
-    getProducts(),
-    getCollectionBySlug(activeCollection),
+    activeCollection ? getCollectionBySlug(activeCollection) : Promise.resolve(undefined),
     activeCollection ? getProductsByCollection(activeCollection) : getProductsByTag(activeTag),
+    getProductCount(),
   ]);
 
   return (
@@ -68,25 +68,13 @@ export default async function ProductsPage({ searchParams }) {
             </div>
           </div>
 
-          {/* Product Grid */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 sm:grid-cols-3 lg:grid-cols-4">
-            {visibleProducts.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
-
-          {visibleProducts.length === 0 ? (
-            <div className="mt-12 rounded-[8px] border border-dashed border-[#ead8b7] bg-[#f4f4f4] p-12 text-center">
-              <p className="text-xl font-bold text-[#241f20]">No pieces found for this selection yet.</p>
-              <p className="mt-2 text-sm text-[#5c4d43]">Please try exploring another category.</p>
-            </div>
-          ) : null}
-
-          <div className="mt-16 border-t border-[#ead8b7] pt-8 text-center">
-            <p className="text-xs font-medium tracking-wide text-[#5c4d43]">
-              Showing {visibleProducts.length} of {products.length} catalog pieces
-            </p>
-          </div>
+          {/* Product Grid with Load More */}
+          <ProductGrid
+            initialProducts={visibleProducts}
+            totalCount={totalCount}
+            collection={activeCollection}
+            tag={activeTag}
+          />
         </section>
       </main>
     </>

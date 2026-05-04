@@ -1,25 +1,35 @@
-import { getProducts } from "@/lib/catalog-store";
+import { getProductsByCollection, getProductsByTag, getPaginatedProducts } from "@/lib/catalog-store";
 import { unstable_noStore as noStore } from "next/cache";
 
 export async function GET(request) {
   noStore();
 
   const { searchParams } = new URL(request.url);
-  const collection = searchParams.get("collection");
-  const tag = searchParams.get("tag");
-  const products = await getProducts();
+  const collection = searchParams.get("collection") || "";
+  const tag = searchParams.get("tag") || "";
+  const cursor = searchParams.get("cursor") || "";
+  const limit = Math.min(Number(searchParams.get("limit")) || 12, 24); // cap at 24
 
-  const filtered = products.filter((product) => {
-    if (collection) {
-      return product.collection === collection;
-    }
+  // If cursor is provided → paginated "Load More" request
+  if (cursor) {
+    const result = await getPaginatedProducts({
+      collection: collection || undefined,
+      tag: tag || undefined,
+      cursor,
+      limit,
+    });
+    return Response.json(result);
+  }
 
-    if (tag) {
-      return product.tags.includes(tag);
-    }
+  // Initial load (no cursor) — used for first page SSR fallback
+  let products;
+  if (collection) {
+    products = await getProductsByCollection(collection, limit);
+  } else if (tag) {
+    products = await getProductsByTag(tag, limit);
+  } else {
+    products = await getProductsByCollection("", limit);
+  }
 
-    return true;
-  });
-
-  return Response.json({ products: filtered });
+  return Response.json({ products, hasMore: products.length >= limit, nextCursor: null });
 }

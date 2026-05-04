@@ -5,7 +5,7 @@ import StatsCounter from "@/components/StatsCounter";
 import { getCollections, getNewSaleProducts, getReviews } from "@/lib/catalog-store";
 import Link from "next/link";
 
-export const revalidate = 60; // Revalidate cache every 60 seconds
+export const revalidate = 300; // Revalidate cache every 5 minutes
 
 const trustItems = [
   "Designed & Manufactured",
