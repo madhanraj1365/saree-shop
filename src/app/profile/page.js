@@ -83,8 +83,16 @@ export default function ProfilePage() {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.mobileNo || !formData.city || !formData.pincode || !formData.completeAddress) {
-      alert("Please fill all required fields.");
+
+    // Phone number validation — must be exactly 10 digits
+    const phoneDigits = formData.mobileNo.replace(/\D/g, "");
+    if (phoneDigits.length !== 10) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    if (!formData.fullName || !formData.city || !formData.pincode || !formData.completeAddress) {
+      alert("Please fill all required fields marked with *.");
       return;
     }
 
@@ -254,7 +262,7 @@ export default function ProfilePage() {
               <div className="grid gap-6 md:grid-cols-2">
                 {/* Full Name */}
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Full Name</label>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Full Name <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="fullName"
@@ -275,7 +283,7 @@ export default function ProfilePage() {
 
                 {/* Mobile No */}
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Mobile No</label>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Mobile No <span className="text-red-500">*</span></label>
                   <div className="flex items-center rounded-[4px] border border-[#e0e0e0] bg-[#fafafa] transition focus-within:border-[#d8a734] focus-within:bg-white focus-within:ring-1 focus-within:ring-[#d8a734]">
                     <div className="flex h-full items-center pl-4 pr-3 text-sm font-medium text-[#555] border-r border-[#e0e0e0]">
                       +91
@@ -284,8 +292,15 @@ export default function ProfilePage() {
                       type="tel"
                       name="mobileNo"
                       required
+                      maxLength={10}
+                      pattern="[0-9]{10}"
+                      placeholder="10-digit number"
                       value={formData.mobileNo}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        // Only allow digits
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        setFormData((prev) => ({ ...prev, mobileNo: val }));
+                      }}
                       className="w-full border-none bg-transparent px-4 py-3 text-sm text-[#333] focus:outline-none focus:ring-0"
                     />
                   </div>
@@ -310,7 +325,7 @@ export default function ProfilePage() {
 
                 {/* City */}
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">City</label>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">City <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="city"
@@ -323,7 +338,7 @@ export default function ProfilePage() {
 
                 {/* Pincode */}
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Pincode</label>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Pincode <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="pincode"
@@ -337,7 +352,7 @@ export default function ProfilePage() {
 
               {/* Complete Address */}
               <div className="mt-6">
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Complete Address</label>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#555]">Complete Address <span className="text-red-500">*</span></label>
                 <textarea
                   name="completeAddress"
                   required
