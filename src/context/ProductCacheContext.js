@@ -10,7 +10,7 @@ const TTL = 10 * 60 * 1000; // 10 minutes
 const getSavedCache = () => {
   if (typeof window === "undefined") return {};
   try {
-    const saved = sessionStorage.getItem(CACHE_KEY);
+    const saved = localStorage.getItem(CACHE_KEY);
     if (!saved) return {};
     
     const parsed = JSON.parse(saved);
@@ -64,7 +64,7 @@ export function ProductCacheProvider({ children }) {
 
           if (typeof window !== "undefined") {
             try {
-              sessionStorage.setItem(CACHE_KEY, JSON.stringify(updated));
+              localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
             } catch (err) {
               console.warn("Failed to persist product cache", err);
             }
