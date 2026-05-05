@@ -1,8 +1,7 @@
 import { getProductsByCollection, getProductsByTag, getPaginatedProducts, getProductsByIds } from "@/lib/catalog-store";
-import { unstable_noStore as noStore } from "next/cache";
+export const revalidate = 300;
 
 export async function GET(request) {
-  noStore();
 
   const { searchParams } = new URL(request.url);
   const idsParam = searchParams.get("ids");

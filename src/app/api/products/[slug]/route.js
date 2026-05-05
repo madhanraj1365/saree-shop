@@ -1,8 +1,7 @@
 import { getProductBySlug, getRelatedProducts } from "@/lib/catalog-store";
-import { unstable_noStore as noStore } from "next/cache";
+export const revalidate = 60;
 
 export async function GET(_request, { params }) {
-  noStore();
 
   const { slug } = await params;
   const product = await getProductBySlug(slug);
