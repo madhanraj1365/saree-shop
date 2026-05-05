@@ -58,6 +58,13 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
+    // Optimistic initial load from local storage
+    const initialCart = JSON.parse(localStorage.getItem("sareeCart") || "[]");
+    setCartCount(initialCart.reduce((total, item) => total + item.quantity, 0));
+    
+    const initialWishlist = JSON.parse(localStorage.getItem("sareeWishlist") || "[]");
+    setWishlistCount(initialWishlist.reduce((total, item) => total + item.quantity, 0));
+
     const updateCount = async () => {
       if (user) {
         try {
@@ -68,9 +75,12 @@ export default function Header() {
           if (res.ok) {
             const data = await res.json();
             const items = data.items || [];
+            localStorage.setItem("sareeCart", JSON.stringify(items));
             const newCount = items.reduce((total, item) => total + item.quantity, 0);
-            if (newCount > cartCount) setAnimateCart(true);
-            setCartCount(newCount);
+            setCartCount((prev) => {
+              if (newCount > prev) setAnimateCart(true);
+              return newCount;
+            });
           }
 
           const wishRes = await fetch("/api/wishlist", {
@@ -79,9 +89,12 @@ export default function Header() {
           if (wishRes.ok) {
             const data = await wishRes.json();
             const items = data.items || [];
+            localStorage.setItem("sareeWishlist", JSON.stringify(items));
             const newWishCount = items.reduce((total, item) => total + item.quantity, 0);
-            if (newWishCount > wishlistCount) setAnimateWishlist(true);
-            setWishlistCount(newWishCount);
+            setWishlistCount((prev) => {
+              if (newWishCount > prev) setAnimateWishlist(true);
+              return newWishCount;
+            });
           }
         } catch (err) {
           console.error("Cloud cart fetch failed", err);
@@ -89,13 +102,17 @@ export default function Header() {
       } else {
         const cart = JSON.parse(localStorage.getItem("sareeCart") || "[]");
         const newCount = cart.reduce((total, item) => total + item.quantity, 0);
-        if (newCount > cartCount) setAnimateCart(true);
-        setCartCount(newCount);
+        setCartCount((prev) => {
+          if (newCount > prev) setAnimateCart(true);
+          return newCount;
+        });
 
         const wishlist = JSON.parse(localStorage.getItem("sareeWishlist") || "[]");
         const newWishCount = wishlist.reduce((total, item) => total + item.quantity, 0);
-        if (newWishCount > wishlistCount) setAnimateWishlist(true);
-        setWishlistCount(newWishCount);
+        setWishlistCount((prev) => {
+          if (newWishCount > prev) setAnimateWishlist(true);
+          return newWishCount;
+        });
       }
     };
 
@@ -119,7 +136,7 @@ export default function Header() {
       window.removeEventListener("saree-cart-change", handleCartEvent);
       window.removeEventListener("saree-wishlist-change", handleWishlistEvent);
     };
-  }, [user, cartCount, wishlistCount]);
+  }, [user]);
 
   useEffect(() => {
     if (animateCart) {

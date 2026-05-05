@@ -101,7 +101,7 @@ export async function POST(request) {
     sendAdminOrderNotification(orderDoc).catch(err => console.error("Email notify error:", err));
 
     // 5. Clear user cart
-    await db.collection("carts").doc(userId).delete();
+    await db.collection("cart").doc(userId).delete();
 
     return NextResponse.json({ success: true, billId, pdfUrl });
   } catch (error) {

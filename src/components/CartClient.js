@@ -19,6 +19,10 @@ export default function CartClient() {
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
 
   useEffect(() => {
+    // Optimistic load
+    const localCart = JSON.parse(localStorage.getItem("sareeCart") || "[]");
+    setItems(localCart);
+
     const auth = getFirebaseClientAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -30,10 +34,11 @@ export default function CartClient() {
           if (res.ok) {
             const data = await res.json();
             setItems(data.items || []);
+            localStorage.setItem("sareeCart", JSON.stringify(data.items || []));
           }
         } catch (err) {
           console.error("Failed to load cloud cart", err);
-          setItems([]);
+          setItems(JSON.parse(localStorage.getItem("sareeCart") || "[]"));
         }
       } else {
         setItems(JSON.parse(localStorage.getItem("sareeCart") || "[]"));
