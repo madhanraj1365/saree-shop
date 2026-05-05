@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import {
   Timestamp,
   FieldValue,
+  FieldPath,
 } from "firebase-admin/firestore";
 import { collections as seedCollections, products as seedProducts, reviews as seedReviews } from "@/data/catalog";
 import { getFirebaseAdminDb } from "@/lib/firebase-admin";
@@ -359,6 +360,45 @@ export async function getRelatedProducts(product, limit = 4) {
   } catch (error) {
     if (isFirestoreUnavailableError(error)) {
       return seededRelated.slice(0, limit);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Get multiple products by their exact document IDs.
+ * Chunking is handled internally for Firestore's 30-item 'in' query limit.
+ */
+export async function getProductsByIds(ids) {
+  if (!ids || ids.length === 0) return [];
+  
+  // Filter seed products
+  const seeded = seedProducts
+    .filter((p) => ids.includes(p._id))
+    .map((p) => normalizeProductLite(p));
+    
+  try {
+    const db = getFirebaseAdminDb();
+    const batches = [];
+    
+    // Chunk into 30s
+    for (let i = 0; i < ids.length; i += 30) {
+      const batchIds = ids.slice(i, i + 30);
+      batches.push(
+        db.collection("products")
+          .where(FieldPath.documentId(), "in", batchIds)
+          .select(...LISTING_FIELDS)
+          .get()
+      );
+    }
+    
+    const snapshots = await Promise.all(batches);
+    const remote = snapshots.flatMap((snap) => snap.docs.map((doc) => normalizeProductLite(doc.data())));
+    
+    return mergeBySlug(seeded, remote);
+  } catch (error) {
+    if (isFirestoreUnavailableError(error)) {
+      return seeded;
     }
     throw error;
   }

@@ -7,11 +7,12 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseClientAuth } from "@/lib/firebase-client";
 import { formatPrice } from "@/lib/catalog";
+import { useProductCache } from "@/context/ProductCacheContext";
 
 export default function OrderSummaryPage() {
   const router = useRouter();
   const [items, setItems] = useState([]);
-  const [products, setProducts] = useState([]);
+  const { cache, fetchProducts } = useProductCache();
   const [address, setAddress] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [orderNotes, setOrderNotes] = useState("");
@@ -50,32 +51,28 @@ export default function OrderSummaryPage() {
       }
     });
 
-    // Load Products
-    async function loadProducts() {
-      try {
-        const response = await fetch("/api/products");
-        const data = await response.json();
-        setProducts(data.products || []);
-        setIsLoaded(true);
-      } catch {
-        setProducts([]);
-        setIsLoaded(true);
-      }
-    }
-
-    loadProducts();
-
     return () => unsubscribe();
   }, [router]);
+
+  useEffect(() => {
+    if (items.length > 0) {
+      const productIds = items.map(item => item.productId);
+      fetchProducts(productIds).finally(() => {
+        setIsLoaded(true);
+      });
+    } else {
+      setIsLoaded(true);
+    }
+  }, [items, fetchProducts]);
 
   const cartProducts = useMemo(() => {
     return items
       .map((item) => {
-        const product = products.find((candidate) => candidate._id === item.productId);
-        return product ? { ...product, quantity: item.quantity } : null;
+        const entry = cache[item.productId];
+        return entry ? { ...entry.data, quantity: item.quantity } : null;
       })
       .filter(Boolean);
-  }, [items, products]);
+  }, [items, cache]);
 
   const subtotal = cartProducts.reduce((sum, product) => sum + product.price * product.quantity, 0);
   const shipping = subtotal > 3000 ? 0 : 80;

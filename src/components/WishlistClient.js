@@ -5,10 +5,11 @@ import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseClientAuth } from "@/lib/firebase-client";
 import { formatPrice } from "@/lib/catalog";
+import { useProductCache } from "@/context/ProductCacheContext";
 
 export default function WishlistClient() {
   const [items, setItems] = useState([]);
-  const [products, setProducts] = useState([]);
+  const { cache, fetchProducts } = useProductCache();
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -36,34 +37,25 @@ export default function WishlistClient() {
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
-    async function loadProducts() {
-      try {
-        const response = await fetch("/api/products");
-        const data = await response.json();
-        if (isMounted) {
-          setProducts(data.products || []);
-          setIsLoaded(true);
-        }
-      } catch {
-        if (isMounted) {
-          setProducts([]);
-          setIsLoaded(true);
-        }
-      }
+    if (items.length === 0) {
+      setIsLoaded(true);
+      return;
     }
-    loadProducts();
-    return () => { isMounted = false; };
-  }, []);
+    
+    const productIds = items.map(item => item.productId);
+    fetchProducts(productIds).finally(() => {
+      setIsLoaded(true);
+    });
+  }, [items, fetchProducts]);
 
   const wishProducts = useMemo(() => {
     return items
       .map((item) => {
-        const product = products.find((candidate) => candidate._id === item.productId);
-        return product ? product : null;
+        const entry = cache[item.productId];
+        return entry ? entry.data : null;
       })
       .filter(Boolean);
-  }, [items, products]);
+  }, [items, cache]);
 
   async function removeFromWishlist(productId) {
     const newItems = items.filter(item => item.productId !== productId);

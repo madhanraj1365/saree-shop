@@ -7,13 +7,14 @@ import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseClientAuth } from "@/lib/firebase-client";
 import { formatPrice } from "@/lib/catalog";
 import { shopDetails } from "@/lib/shop";
+import { useProductCache } from "@/context/ProductCacheContext";
 
 const shopWhatsAppNumber = shopDetails.whatsappDigits;
 
 export default function CartClient() {
   const router = useRouter();
   const [items, setItems] = useState([]);
-  const [products, setProducts] = useState([]);
+  const { cache, fetchProducts } = useProductCache();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
 
@@ -42,40 +43,25 @@ export default function CartClient() {
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadProducts() {
-      try {
-        const response = await fetch("/api/products");
-        const data = await response.json();
-
-        if (isMounted) {
-          setProducts(data.products || []);
-          setIsLoaded(true);
-        }
-      } catch {
-        if (isMounted) {
-          setProducts([]);
-          setIsLoaded(true);
-        }
-      }
+    if (items.length === 0) {
+      setIsLoaded(true);
+      return;
     }
-
-    loadProducts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    
+    const productIds = items.map(item => item.productId);
+    fetchProducts(productIds).finally(() => {
+      setIsLoaded(true);
+    });
+  }, [items, fetchProducts]);
 
   const cartProducts = useMemo(() => {
     return items
       .map((item) => {
-        const product = products.find((candidate) => candidate._id === item.productId);
-        return product ? { ...product, quantity: item.quantity } : null;
+        const entry = cache[item.productId];
+        return entry ? { ...entry.data, quantity: item.quantity } : null;
       })
       .filter(Boolean);
-  }, [items, products]);
+  }, [items, cache]);
 
   const total = cartProducts.reduce((sum, product) => sum + product.price * product.quantity, 0);
   const remainingForShipping = Math.max(0, 3000 - total);

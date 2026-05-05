@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase-admin";
 import { generateInvoiceBuffer } from "@/lib/pdf-generator";
 import { uploadRawBuffer } from "@/lib/cloudinary";
-
 import { sendAdminOrderNotification } from "@/lib/email-service";
+import { getProductsByIds } from "@/lib/catalog-store";
 
 export async function POST(request) {
   try {
@@ -18,25 +18,57 @@ export async function POST(request) {
     const userId = decodedToken.uid;
 
     const data = await request.json();
-    const { items, address, subtotal, shipping, giftWrapFee, totalAmount } = data;
+    const { items, address, shipping, giftWrapFee } = data;
 
-    if (!items || !items.length || !address || !totalAmount) {
+    if (!items || !items.length || !address) {
       return NextResponse.json({ error: "Missing required order data" }, { status: 400 });
     }
+
+    // Securely verify stock and price from Firestore
+    const productIds = items.map(item => item._id || item.productId);
+    const freshProducts = await getProductsByIds(productIds);
+
+    let secureSubtotal = 0;
+    const verifiedItems = [];
+
+    for (const item of items) {
+      const itemId = item._id || item.productId;
+      const freshProduct = freshProducts.find(p => p._id === itemId);
+      
+      if (!freshProduct) {
+        return NextResponse.json({ error: `Product ${item.name || itemId} is no longer available.` }, { status: 400 });
+      }
+      
+      if (freshProduct.stock < item.quantity) {
+        return NextResponse.json({ error: `Product ${freshProduct.name} does not have enough stock.` }, { status: 400 });
+      }
+      
+      secureSubtotal += freshProduct.price * item.quantity;
+      
+      // We keep the client's formatting but enforce the fresh price and name
+      verifiedItems.push({
+        ...item,
+        ...freshProduct,
+        quantity: item.quantity,
+        price: freshProduct.price
+      });
+    }
+
+    const secureTotalAmount = secureSubtotal + (shipping || 0) + (giftWrapFee || 0);
 
     const billId = `BILL_${Date.now()}`;
     const orderDate = new Date().toISOString();
 
-    // 1. Generate PDF (same function used by the download API)
+    // 1. Generate PDF
     const orderDataForPdf = {
       billId,
-      items,
+      items: verifiedItems,
       address,
       orderDate,
-      subtotal: subtotal || totalAmount,
+      subtotal: secureSubtotal,
       shipping: shipping || 0,
       giftWrapFee: giftWrapFee || 0,
-      totalAmount,
+      totalAmount: secureTotalAmount,
     };
     const pdfBuffer = await generateInvoiceBuffer(orderDataForPdf, new URL(request.url).origin);
 
@@ -53,11 +85,11 @@ export async function POST(request) {
       pdfUrl,
       orderDate,
       paymentStatus: "SUCCESS",
-      totalAmount,
-      subtotal: subtotal || totalAmount,
+      totalAmount: secureTotalAmount,
+      subtotal: secureSubtotal,
       shipping: shipping || 0,
       giftWrapFee: giftWrapFee || 0,
-      items,
+      items: verifiedItems,
       address,
       status: "PENDING", // Initial admin status
     };
