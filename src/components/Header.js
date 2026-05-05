@@ -5,10 +5,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseClientAuth } from "@/lib/firebase-client";
 import { shopDetails } from "@/lib/shop";
-import { Playfair_Display } from "next/font/google";
 import { User } from "lucide-react";
-
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "700", "900"] });
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -172,7 +169,7 @@ export default function Header() {
               className="h-10 w-10 shrink-0 rounded-[8px] border border-[#ead8b7] object-cover shadow-sm transition-transform group-hover:scale-[1.03] sm:h-16 sm:w-16"
             />
             <span className="flex min-w-0 flex-col leading-none">
-              <span className={`truncate text-lg tracking-[0.10em] text-[#8b001c] sm:text-2xl drop-shadow-sm font-black ${playfair.className}`}>
+              <span className="truncate text-lg tracking-[0.10em] text-[#8b001c] sm:text-2xl drop-shadow-sm font-black font-serif">
                 SMS TEX
               </span>
               <span className="mt-1 text-[8px] font-bold uppercase tracking-[0.2em] text-[#d8a734] sm:text-[11px] sm:tracking-[0.24em]">

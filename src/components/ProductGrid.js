@@ -6,7 +6,12 @@ import ProductCard from "@/components/ProductCard";
 export default function ProductGrid({ initialProducts, totalCount, collection, tag }) {
   const [products, setProducts] = useState(initialProducts);
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(initialProducts.length >= 12);
+  
+  // If we fetched < 12 items and a collection is active, the collection is exhausted.
+  // We can immediately switch to fetching excluded items.
+  const isCollectionExhausted = collection && initialProducts.length < 12;
+  const [isFetchingExcluded, setIsFetchingExcluded] = useState(isCollectionExhausted);
+  const [hasMore, setHasMore] = useState(initialProducts.length >= 12 || isCollectionExhausted);
 
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return;
@@ -14,39 +19,77 @@ export default function ProductGrid({ initialProducts, totalCount, collection, t
     setLoading(true);
 
     try {
-      // Use the createdAt of the last product as cursor
       const lastProduct = products[products.length - 1];
-      const cursor = lastProduct?.createdAt || "";
+      // Reset cursor if we just switched to Phase 2
+      const isSwitchingPhase = collection && !isFetchingExcluded && (!lastProduct || products.filter(p => p.collection === collection).length === products.length);
+      // Wait, to be perfectly safe with cursors, if we switch to phase 2, we should NOT pass a cursor!
+      // Actually, if `isFetchingExcluded` is true, the `products` array contains items from the excluded collection too.
+      // So the cursor should be the last product THAT IS FROM THE EXCLUDED phase.
+      // Let's find the last product that is NOT from `collection`.
+      let cursor = lastProduct?.createdAt || "";
+      if (isFetchingExcluded && collection) {
+        const phase2Products = products.filter(p => p.collection !== collection);
+        if (phase2Products.length > 0) {
+          cursor = phase2Products[phase2Products.length - 1].createdAt || "";
+        } else {
+          cursor = ""; // no phase 2 products yet, start from beginning
+        }
+      } else if (collection && !isFetchingExcluded) {
+         // phase 1 cursor
+         cursor = lastProduct?.createdAt || "";
+      }
 
       const params = new URLSearchParams();
-      if (collection) params.set("collection", collection);
-      if (tag) params.set("tag", tag);
+      if (collection) {
+        if (isFetchingExcluded) {
+          params.set("excludeCollection", collection);
+        } else {
+          params.set("collection", collection);
+        }
+      } else if (tag) {
+        params.set("tag", tag);
+      }
+      
       if (cursor) params.set("cursor", cursor);
       params.set("limit", "12");
 
       const res = await fetch(`/api/products?${params.toString()}`);
       const data = await res.json();
 
-      if (data.products && data.products.length > 0) {
-        // Deduplicate by slug (seed data overlap)
+      let newlyFetched = data.products || [];
+      
+      if (newlyFetched.length > 0) {
         const existingSlugs = new Set(products.map((p) => p.slug));
-        const newProducts = data.products.filter((p) => !existingSlugs.has(p.slug));
+        const newProducts = newlyFetched.filter((p) => !existingSlugs.has(p.slug));
         setProducts((prev) => [...prev, ...newProducts]);
-        setHasMore(data.hasMore);
+        
+        if (data.hasMore) {
+          setHasMore(true);
+        } else if (collection && !isFetchingExcluded) {
+          setIsFetchingExcluded(true);
+          setHasMore(true); // switch to phase 2
+        } else {
+          setHasMore(false);
+        }
       } else {
-        setHasMore(false);
+        if (collection && !isFetchingExcluded) {
+          setIsFetchingExcluded(true);
+          setHasMore(true); // try phase 2 on next click
+        } else {
+          setHasMore(false);
+        }
       }
     } catch (err) {
       console.error("Failed to load more products:", err);
     } finally {
       setLoading(false);
     }
-  }, [products, loading, hasMore, collection, tag]);
+  }, [products, loading, hasMore, collection, tag, isFetchingExcluded]);
 
   return (
     <>
       {/* Product Grid */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 sm:grid-cols-3 lg:grid-cols-5">
         {products.map((product) => (
           <ProductCard key={product._id || product.slug} product={product} />
         ))}

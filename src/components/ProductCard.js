@@ -5,8 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { getFirebaseClientAuth } from "@/lib/firebase-client";
 import { formatPrice } from "@/lib/catalog";
-
-import { Share2, ChevronRight } from "lucide-react";
+import { Share2, ChevronRight, Star } from "lucide-react";
 
 function getDisplayPricing(price) {
   const originalPrice = Math.ceil(price / 0.83 / 10) * 10;
@@ -21,6 +20,10 @@ export default function ProductCard({ product }) {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { originalPrice } = getDisplayPricing(product.price);
+
+  const possibleRatings = [4.0, 4.5, 5.0];
+  const ratingIndex = product.name ? product.name.length % possibleRatings.length : 0;
+  const rating = possibleRatings[ratingIndex];
 
   useEffect(() => {
     if (!product.images || product.images.length <= 1) return;
@@ -177,16 +180,36 @@ export default function ProductCard({ product }) {
           </div>
         </div>
 
-        <div className="relative z-10 flex flex-col px-3 pb-3 pt-2 pointer-events-none">
-          <p className="text-[11px] sm:text-[13px] font-bold uppercase tracking-widest text-[#d8a734] mb-1">
+        <div className="relative z-10 flex flex-1 flex-col px-3 pb-3 pt-2 pointer-events-none">
+          <p className="text-[11px] sm:text-[13px] font-bold uppercase tracking-widest text-[#d8a734] mb-1 leading-tight">
             {formatCollectionName(product.collection)}
           </p>
-          <h3 className="line-clamp-2 text-[14px] sm:text-[18px] font-normal leading-tight text-[#1f1f1f] transition-colors group-hover:text-[#8b001c]">
+          <h3 className="line-clamp-2 text-[14px] sm:text-[18px] font-normal leading-snug text-[#1f1f1f] transition-colors group-hover:text-[#8b001c]">
             {product.name}
           </h3>
-          <div className="mt-3 flex flex-wrap items-baseline gap-2">
-            <span className="text-[16px] sm:text-[18px] font-black text-black">{formatPrice(product.price)}</span>
-            <span className="text-[13px] sm:text-[15px] font-medium text-[#8b8b8b] line-through">{formatPrice(originalPrice)}</span>
+          <div className="mt-auto pt-2 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-baseline gap-2">
+              <span className="text-[16px] sm:text-[18px] font-black text-black">{formatPrice(product.price)}</span>
+              <span className="text-[13px] sm:text-[15px] font-medium text-[#8b8b8b] line-through">{formatPrice(originalPrice)}</span>
+            </div>
+            <div className="flex items-center gap-0.5 text-[#d8a734]" title={`Rating: ${rating}`}>
+              {[1, 2, 3, 4, 5].map((starIdx) => {
+                if (rating >= starIdx) {
+                  return <Star key={starIdx} className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current" />;
+                } else if (rating >= starIdx - 0.5) {
+                  return (
+                    <div key={starIdx} className="relative h-3 w-3 sm:h-3.5 sm:w-3.5">
+                      <Star className="absolute inset-0 h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-current" fill="none" />
+                      <div className="absolute inset-0 w-[50%] overflow-hidden">
+                        <Star className="absolute inset-0 h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current max-w-none" />
+                      </div>
+                    </div>
+                  );
+                } else {
+                  return <Star key={starIdx} className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-current" fill="none" />;
+                }
+              })}
+            </div>
           </div>
         </div>
     </article>

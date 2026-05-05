@@ -436,7 +436,7 @@ export async function getProductCount() {
  * @param {string} [options.cursor] - ISO date string of last product's createdAt
  * @param {number} [options.limit] - Number of products to fetch (default 12)
  */
-export async function getPaginatedProducts({ collection: collectionSlug, tag, cursor, limit: pageSize = 12 } = {}) {
+export async function getPaginatedProducts({ collection: collectionSlug, excludeCollection, tag, cursor, limit: pageSize = 12 } = {}) {
   try {
     const db = getFirebaseAdminDb();
 
@@ -445,6 +445,8 @@ export async function getPaginatedProducts({ collection: collectionSlug, tag, cu
 
     if (collectionSlug) {
       q = q.where("collection", "==", collectionSlug);
+    } else if (excludeCollection) {
+      q = q.where("collection", "!=", excludeCollection);
     } else if (tag) {
       q = q.where("tags", "array-contains", tag);
     }

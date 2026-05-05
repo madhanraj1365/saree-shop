@@ -13,8 +13,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Roboto", "Arial", system-ui, -apple-system, sans-serif;
-  --font-serif: "Roboto", "Arial", system-ui, -apple-system, sans-serif;
+  --font-sans: "aleo-extralight", sans-serif;
+  --font-serif: "aleo-extralight", sans-serif;
 }
 
 * {
@@ -24,6 +24,20 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 5.5rem;
+}
+
+/* Scale down the base size on desktop to create a "zoomed out" effect 
+   while keeping full-width elements stretching edge-to-edge */
+@media (min-width: 1024px) {
+  html {
+    font-size: 85%; /* ~13.6px instead of 16px */
+  }
+}
+
+@media (min-width: 1440px) {
+  html {
+    font-size: 80%; /* Further zoom out for very large screens if desired, or keep at 85% */
+  }
 }
 
 body {

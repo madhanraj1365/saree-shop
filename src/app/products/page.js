@@ -45,9 +45,9 @@ export default async function ProductsPage({ searchParams }) {
 
         <section className="mx-auto max-w-[1600px] px-4 py-16 sm:px-6 lg:px-8">
           {/* Filters */}
-          <div className="mb-12 space-y-6">
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <span className="mr-2 text-xs font-bold uppercase tracking-[0.12em] text-[#241f20]">Collections:</span>
+          <div className="mb-12">
+            <h3 className="mb-4 text-center text-xs font-bold uppercase tracking-[0.12em] text-[#241f20]">Collections:</h3>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 max-w-4xl mx-auto">
               {collections.map((item) => {
                 const isActive = item.slug === activeCollection;
 
@@ -55,10 +55,10 @@ export default async function ProductsPage({ searchParams }) {
                   <Link
                     key={item.slug}
                     href={`/products?collection=${item.slug}`}
-                    className={`rounded-full border px-5 py-2 text-xs font-semibold tracking-wide transition-all ${
+                    className={`rounded-[8px] border px-4 py-3 text-center text-xs font-bold tracking-wide transition-all ${
                       isActive
                         ? "border-[#d8a734] bg-[#fff4b8] text-[#8b001c]"
-                        : "border-transparent bg-[#f4f4f4] text-[#241f20] hover:border-[#ead8b7]"
+                        : "border-[#ead8b7] bg-white text-[#241f20] hover:border-[#d8a734] hover:bg-[#faf9f8]"
                     }`}
                   >
                     {item.name}
@@ -70,6 +70,7 @@ export default async function ProductsPage({ searchParams }) {
 
           {/* Product Grid with Load More */}
           <ProductGrid
+            key={`${activeCollection}-${activeTag}`}
             initialProducts={visibleProducts}
             totalCount={totalCount}
             collection={activeCollection}

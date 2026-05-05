@@ -208,19 +208,20 @@ export default function CartClient() {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_292px]">
         <div>
-          <div className="hidden grid-cols-[1fr_140px_120px] bg-white px-2 py-3 text-sm font-medium uppercase tracking-[0.18em] text-[#111] md:grid">
+          <div className="hidden grid-cols-[1fr_140px_120px_44px] gap-4 bg-white px-1 py-3 text-sm font-medium uppercase tracking-[0.18em] text-[#111] md:grid">
             <span>Product</span>
             <span className="text-center">Quantity</span>
             <span className="text-center">Price</span>
+            <span></span>
           </div>
 
           <div className="space-y-4 md:space-y-0">
             {cartProducts.map((product) => (
               <div
                 key={product._id}
-                className="grid gap-4 rounded-[8px] bg-white p-4 shadow-sm md:grid-cols-[1fr_140px_120px_44px] md:items-center md:rounded-none md:bg-transparent md:px-1 md:py-6 md:shadow-none"
+                className="grid grid-cols-[1fr_auto] items-center gap-y-4 gap-x-2 rounded-[8px] bg-white p-4 shadow-sm md:grid-cols-[1fr_140px_120px_44px] md:gap-4 md:rounded-none md:bg-transparent md:px-1 md:py-6 md:shadow-none"
               >
-                <div className="flex items-center gap-4">
+                <div className="col-span-2 flex items-center gap-4 md:col-span-1">
                   <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded-[6px] bg-[#eee8dd] md:h-28 md:w-20">
                     <img
                       src={product.images[0]}
@@ -238,7 +239,7 @@ export default function CartClient() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-start gap-4 md:justify-center">
+                <div className="col-start-1 row-start-2 flex items-center justify-start gap-4 md:col-auto md:row-auto md:justify-center">
                   <button
                     type="button"
                     onClick={() => updateQuantity(product._id, -1)}
@@ -258,18 +259,18 @@ export default function CartClient() {
                   </button>
                 </div>
 
-                <div className="text-sm font-normal text-[#111] md:text-center">
+                <div className="col-start-1 row-start-3 text-sm font-normal text-[#111] md:col-auto md:row-auto md:text-center">
                   Pcs {formatPrice(product.price * product.quantity)}
                 </div>
 
                 <button
                   type="button"
                   onClick={() => removeFromCart(product._id)}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-[#8b001c] text-white transition hover:bg-[#5f0015]"
+                  className="col-start-2 row-start-2 row-span-2 grid h-11 w-11 place-items-center justify-self-end self-center rounded-full bg-[#8b001c] text-white transition hover:bg-[#5f0015] md:col-auto md:row-auto md:h-9 md:w-9 md:justify-self-auto"
                   title="Remove item"
                   aria-label={`Remove ${product.name}`}
                 >
-                  <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24">
+                  <svg className="h-6 w-6 fill-current md:h-5 md:w-5" viewBox="0 0 24 24">
                     <path d="M8 7V5c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v2h4v2h-1v10c0 1.7-1.3 3-3 3H8c-1.7 0-3-1.3-3-3V9H4V7h4Zm2 0h4V5h-4v2Zm-3 2v10c0 .6.4 1 1 1h8c.6 0 1-.4 1-1V9H7Zm3 2h2v7h-2v-7Zm4 0h2v7h-2v-7Z" />
                   </svg>
                 </button>

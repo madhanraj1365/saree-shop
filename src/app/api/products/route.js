@@ -7,6 +7,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const idsParam = searchParams.get("ids");
   const collection = searchParams.get("collection") || "";
+  const excludeCollection = searchParams.get("excludeCollection") || "";
   const tag = searchParams.get("tag") || "";
   const cursor = searchParams.get("cursor") || "";
   const limit = Math.min(Number(searchParams.get("limit")) || 12, 24); // cap at 24
@@ -25,6 +26,7 @@ export async function GET(request) {
   if (cursor) {
     const result = await getPaginatedProducts({
       collection: collection || undefined,
+      excludeCollection: excludeCollection || undefined,
       tag: tag || undefined,
       cursor,
       limit,

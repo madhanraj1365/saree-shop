@@ -15,6 +15,9 @@ import { ProductCacheProvider } from "@/context/ProductCacheContext";
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="h-full antialiased">
+      <head>
+        <link rel="stylesheet" href="https://use.typekit.net/noz7trp.css" />
+      </head>
       <body className="min-h-full flex flex-col font-sans">
         <NextTopLoader color="#8b001c" height={3} showSpinner={false} />
         <ProductCacheProvider>

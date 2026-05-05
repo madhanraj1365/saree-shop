@@ -87,7 +87,7 @@ export default function WishlistClient() {
   if (items.length > 0 && !isLoaded) {
     return (
       <div className="mt-12 rounded-xl border border-dashed border-[#eaddcf] bg-[#fbf9f6] p-12 text-center">
-        <p className="font-serif text-xl italic text-[#4a3b32] animate-pulse">Loading your wishlist...</p>
+        <p className="font-serif text-xl text-[#4a3b32] animate-pulse">Loading your wishlist...</p>
       </div>
     );
   }
@@ -130,7 +130,7 @@ export default function WishlistClient() {
     </div>
   ) : (
     <div className="mt-12 rounded-xl border border-dashed border-[#eaddcf] bg-[#fbf9f6] p-16 text-center">
-      <p className="font-serif text-2xl italic text-[#4a3b32]">Your wishlist is waiting to be filled.</p>
+      <p className="font-serif text-2xl text-[#4a3b32]">Your wishlist is waiting to be filled.</p>
       <Link
         href="/products"
         className="mt-8 inline-block rounded-full bg-[#2c2420] px-8 py-3 text-sm font-bold uppercase tracking-[0.15em] text-white transition-transform hover:scale-105"
