@@ -15,48 +15,40 @@ export default function CartClient() {
   const router = useRouter();
   const [items, setItems] = useState([]);
   const { cache, fetchProducts } = useProductCache();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
 
   useEffect(() => {
-    // Optimistic load
+    // Step 1 — show localStorage immediately, no waiting
     const localCart = JSON.parse(localStorage.getItem("sareeCart") || "[]");
     setItems(localCart);
 
+    // Step 2 — sync with server silently in background
     const auth = getFirebaseClientAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const token = await user.getIdToken();
-          const res = await fetch("/api/cart", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setItems(data.items || []);
-            localStorage.setItem("sareeCart", JSON.stringify(data.items || []));
-          }
-        } catch (err) {
-          console.error("Failed to load cloud cart", err);
-          setItems(JSON.parse(localStorage.getItem("sareeCart") || "[]"));
+      if (!user) return; // guest users already loaded from localStorage above
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch("/api/cart", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const cloudItems = data.items || [];
+          localStorage.setItem("sareeCart", JSON.stringify(cloudItems));
+          setItems(cloudItems); // silently update in background
         }
-      } else {
-        setItems(JSON.parse(localStorage.getItem("sareeCart") || "[]"));
+      } catch (err) {
+        console.error("Failed to load cloud cart", err);
       }
     });
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    if (items.length === 0) {
-      setIsLoaded(true);
-      return;
-    }
-    
+    if (items.length === 0) return;
     const productIds = items.map(item => item.productId);
-    fetchProducts(productIds).finally(() => {
-      setIsLoaded(true);
-    });
+    fetchProducts(productIds); // no isLoaded gating — render whatever is in cache instantly
   }, [items, fetchProducts]);
 
   const cartProducts = useMemo(() => {
@@ -165,10 +157,18 @@ export default function CartClient() {
     persistItems(items.filter((item) => item.productId !== productId));
   }
 
-  if (items.length > 0 && !isLoaded) {
+  if (items.length > 0 && cartProducts.length === 0) {
     return (
-      <div className="mt-12 rounded-[8px] border border-dashed border-[#ead8b7] bg-[#f4f4f4] p-12 text-center">
-        <p className="text-xl font-bold text-[#8b001c] animate-pulse">Loading your shopping bag...</p>
+      <div className="space-y-4 mt-8">
+        {items.map((_, i) => (
+          <div key={i} className="flex items-center gap-4 rounded-[8px] bg-white p-4 shadow-sm animate-pulse">
+            <div className="h-24 w-20 rounded-[6px] bg-[#eee8dd]" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-2/3 rounded bg-[#eee8dd]" />
+              <div className="h-3 w-1/3 rounded bg-[#eee8dd]" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
