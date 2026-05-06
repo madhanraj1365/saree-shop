@@ -444,19 +444,23 @@ export async function getPaginatedProducts({ collection: collectionSlug, exclude
     let q = db.collection("products");
 
     if (collectionSlug) {
-      q = q.where("collection", "==", collectionSlug);
+      q = q.where("collection", "==", collectionSlug).orderBy("createdAt", "desc");
     } else if (excludeCollection) {
-      q = q.where("collection", "!=", excludeCollection);
+      // Firestore requires the first orderBy to match the inequality field
+      q = q.where("collection", "!=", excludeCollection).orderBy("collection").orderBy("createdAt", "desc");
     } else if (tag) {
-      q = q.where("tags", "array-contains", tag);
+      q = q.where("tags", "array-contains", tag).orderBy("createdAt", "desc");
+    } else {
+      q = q.orderBy("createdAt", "desc");
     }
 
-    // Apply field selection + ordering + limit
-    q = q.select(...LISTING_FIELDS).orderBy("createdAt", "desc").limit(pageSize + 1);
+    // Apply field selection + limit
+    q = q.select(...LISTING_FIELDS).limit(pageSize + 1);
 
-    // Apply cursor (startAfter) if provided
-    if (cursor) {
-      q = q.startAfter(cursor);
+    // Apply cursor (startAfter) if provided (only for standard single-orderBy queries)
+    if (cursor && !excludeCollection) {
+      const cursorDate = new Date(cursor);
+      q = q.startAfter(cursorDate);
     }
 
     const snapshot = await q.get();
@@ -536,9 +540,7 @@ export async function addCollection(input) {
     throw error;
   }
 
-  // Invalidate caches after write
-  _cache.delete("collections_merged");
-  _cache.delete("list_collections");
+
 
   return {
     ...payload,
@@ -579,9 +581,7 @@ export async function updateCollection(slug, input) {
     throw error;
   }
 
-  // Invalidate caches after write
-  _cache.delete("collections_merged");
-  _cache.delete("list_collections");
+
 
   return payload;
 }
@@ -641,9 +641,7 @@ export async function addProduct(input) {
     throw error;
   }
 
-  // Invalidate caches after write
-  _cache.delete("products_merged");
-  _cache.delete("list_products");
+
 
   return {
     ...payload,
@@ -699,9 +697,7 @@ export async function updateProduct(slug, input) {
     throw error;
   }
 
-  // Invalidate caches after write
-  _cache.delete("products_merged");
-  _cache.delete("list_products");
+
 
   return { ...product, ...updates };
 }
@@ -723,9 +719,7 @@ export async function deleteProduct(slug) {
     throw error;
   }
 
-  // Invalidate caches after write
-  _cache.delete("products_merged");
-  _cache.delete("list_products");
+
   
   return { success: true };
 }
