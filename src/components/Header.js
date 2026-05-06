@@ -58,81 +58,62 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    // Optimistic initial load from local storage
+    // Initial load from localStorage — instant, no API call
     const initialCart = JSON.parse(localStorage.getItem("sareeCart") || "[]");
     setCartCount(initialCart.reduce((total, item) => total + item.quantity, 0));
-    
+
     const initialWishlist = JSON.parse(localStorage.getItem("sareeWishlist") || "[]");
     setWishlistCount(initialWishlist.reduce((total, item) => total + item.quantity, 0));
 
-    const updateCount = async () => {
-      if (user) {
-        try {
-          const token = await user.getIdToken();
-          const res = await fetch("/api/cart", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.ok) {
-            const data = await res.json();
-            const items = data.items || [];
-            localStorage.setItem("sareeCart", JSON.stringify(items));
-            const newCount = items.reduce((total, item) => total + item.quantity, 0);
-            setCartCount((prev) => {
-              if (newCount > prev) setAnimateCart(true);
-              return newCount;
-            });
-          }
+    // Sync with server ONCE on mount — runs in background, does not block UI
+    const syncWithServer = async () => {
+      if (!user) return;
+      try {
+        const token = await user.getIdToken();
 
-          const wishRes = await fetch("/api/wishlist", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (wishRes.ok) {
-            const data = await wishRes.json();
-            const items = data.items || [];
-            localStorage.setItem("sareeWishlist", JSON.stringify(items));
-            const newWishCount = items.reduce((total, item) => total + item.quantity, 0);
-            setWishlistCount((prev) => {
-              if (newWishCount > prev) setAnimateWishlist(true);
-              return newWishCount;
-            });
-          }
-        } catch (err) {
-          console.error("Cloud cart fetch failed", err);
+        const cartRes = await fetch("/api/cart", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (cartRes.ok) {
+          const data = await cartRes.json();
+          const items = data.items || [];
+          localStorage.setItem("sareeCart", JSON.stringify(items));
+          setCartCount(items.reduce((total, item) => total + item.quantity, 0));
         }
-      } else {
-        const cart = JSON.parse(localStorage.getItem("sareeCart") || "[]");
-        const newCount = cart.reduce((total, item) => total + item.quantity, 0);
-        setCartCount((prev) => {
-          if (newCount > prev) setAnimateCart(true);
-          return newCount;
-        });
 
-        const wishlist = JSON.parse(localStorage.getItem("sareeWishlist") || "[]");
-        const newWishCount = wishlist.reduce((total, item) => total + item.quantity, 0);
-        setWishlistCount((prev) => {
-          if (newWishCount > prev) setAnimateWishlist(true);
-          return newWishCount;
+        const wishRes = await fetch("/api/wishlist", {
+          headers: { Authorization: `Bearer ${token}` },
         });
+        if (wishRes.ok) {
+          const data = await wishRes.json();
+          const items = data.items || [];
+          localStorage.setItem("sareeWishlist", JSON.stringify(items));
+          setWishlistCount(items.reduce((total, item) => total + item.quantity, 0));
+        }
+      } catch (err) {
+        console.error("Server sync failed", err);
       }
     };
 
+    syncWithServer();
+
+    // Event handlers — read from localStorage instantly, zero API calls, zero Firebase reads
     const handleWishlistEvent = (e) => {
+      const items = JSON.parse(localStorage.getItem("sareeWishlist") || "[]");
+      setWishlistCount(items.reduce((total, item) => total + item.quantity, 0));
       if (e?.detail?.action === 'add') setAnimateWishlist(true);
-      updateCount();
     };
 
     const handleCartEvent = (e) => {
+      const items = JSON.parse(localStorage.getItem("sareeCart") || "[]");
+      setCartCount(items.reduce((total, item) => total + item.quantity, 0));
       if (e?.detail?.action === 'add') setAnimateCart(true);
-      updateCount();
     };
 
-    updateCount();
-    window.addEventListener("storage", updateCount);
     window.addEventListener("saree-cart-change", handleCartEvent);
     window.addEventListener("saree-wishlist-change", handleWishlistEvent);
 
     return () => {
-      window.removeEventListener("storage", updateCount);
       window.removeEventListener("saree-cart-change", handleCartEvent);
       window.removeEventListener("saree-wishlist-change", handleWishlistEvent);
     };
