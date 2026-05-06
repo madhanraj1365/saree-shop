@@ -4,29 +4,13 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseClientAuth } from "@/lib/firebase-client";
 
-async function writeToCloud(apiPath, productId, quantity = 1) {
+async function writeToCloud(apiPath, items) {
   const auth = getFirebaseClientAuth();
   const user = auth.currentUser;
   if (!user) return false;
 
   try {
     const token = await user.getIdToken();
-    const getRes = await fetch(apiPath, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    let items = [];
-    if (getRes.ok) {
-      const data = await getRes.json();
-      items = data.items || [];
-    }
-
-    const existing = items.find((item) => item.productId === productId);
-    if (existing) {
-      existing.quantity += quantity;
-    } else {
-      items.push({ productId, quantity });
-    }
-
     await fetch(apiPath, {
       method: "POST",
       headers: {
@@ -73,24 +57,29 @@ export default function ProductActions({ product }) {
   const handleIncrease = () => setQuantity((q) => Math.min(product.stock || 10, q + 1));
 
   async function addToCart() {
-    setJustAddedToCart(true);
-    setTimeout(() => setJustAddedToCart(false), 800);
-    
-    if (user) {
-      setMessage("Syncing with your account...");
-      const success = await writeToCloud("/api/cart", product._id, quantity);
-      if (success) {
-        window.dispatchEvent(new Event("saree-cart-change"));
-        setMessage("Added to cart!");
-      } else {
-        setMessage("Failed to sync. Please try again.");
-      }
+    // 1. Update localStorage immediately
+    const items = JSON.parse(localStorage.getItem("sareeCart") || "[]");
+    const existing = items.find((item) => item.productId === product._id);
+    if (existing) {
+      existing.quantity += quantity;
     } else {
-      writeList("sareeCart", product._id, quantity);
-      window.dispatchEvent(new Event("saree-cart-change"));
-      setMessage("Added to local cart. Sign in to save it permanently.");
+      items.push({ productId: product._id, quantity });
     }
+    localStorage.setItem("sareeCart", JSON.stringify(items));
+
+    // 2. Fire event immediately — Header updates instantly from localStorage
+    window.dispatchEvent(new CustomEvent("saree-cart-change", { detail: { action: 'add' } }));
+
+    // 3. Show button animation immediately
+    setJustAddedToCart(true);
+    setMessage("Added to cart!");
+    setTimeout(() => setJustAddedToCart(false), 800);
     setTimeout(() => setMessage(""), 3000);
+
+    // 4. Sync to cloud in background — no waiting
+    if (user) {
+      writeToCloud("/api/cart", items); // no await — runs in background
+    }
   }
 
 
